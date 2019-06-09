@@ -2,23 +2,22 @@
 
 import sys
 import threading
-from dataclasses import dataclass
 import time
 
 
-@dataclass
 class LnxInfo:
-    local_physical_IP: str
-    local_physical_port: int
-    interfaces: []
+    def __init__(self, local_physical_host, local_physical_port, interfaces):
+        self.local_physical_IP = local_physical_host
+        self.local_physical_port = local_physical_port
+        self.interfaces = interfaces
 
 
-@dataclass
 class LnxBody:
-    remote_physical_IP: str
-    remote_physical_port: int
-    local_virtual_IP: str
-    remote_virtual_IP: str
+    def __init__(self, remote_physical_host, remote_physical_port, local_virtual, remote_virtual):
+        self.remote_physical_IP = remote_physical_host
+        self.remote_physical_port = remote_physical_port
+        self.local_virtual_IP = local_virtual
+        self.remote_virtual_IP = remote_virtual
 
 
 def read_link_data(file_name):
