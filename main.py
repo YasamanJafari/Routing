@@ -38,11 +38,11 @@ def read_link_data(file_name):
     return node_data
 
 
-def read_commands():
+def read_commands(this_node):
     while True:
         text = input("> ")
         if text == "interfaces":
-            print("Not Implemented.")
+            this_node.show_interfaces()
 
         elif text == "routes":
             print("Not Implemented.")
@@ -58,6 +58,7 @@ def read_commands():
 
         elif text == "q":
             print("Not Implemented.")
+            break
 
 
 def main(file_name):
@@ -67,7 +68,7 @@ def main(file_name):
     t2 = threading.Thread(target=this_node.receive_table, args=(10,))
     t1.start()
     t2.start()
-    read_commands()
+    read_commands(this_node)
 
 
 if __name__ == "__main__":
