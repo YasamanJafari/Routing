@@ -1,7 +1,9 @@
 #!/usr/bin/python
 
 import sys
+import threading
 from dataclasses import dataclass
+import time
 
 
 @dataclass
@@ -35,8 +37,35 @@ def read_link_data(file_name):
     return node_data
 
 
+def read_commands():
+    while True:
+        text = input("> ")
+        if text == "interfaces":
+            print("Not Implemented.")
+
+        elif text == "routes":
+            print("Not Implemented.")
+
+        elif text == "down":
+            print("Not Implemented.")
+
+        elif text == "up":
+            print("Not Implemented.")
+
+        elif text == "send":
+            print("Not Implemented.")
+
+        elif text == "q":
+            print("Not Implemented.")
+
+
 def main(file_name):
-    read_link_data(file_name)
+    node_data = read_link_data(file_name)
+    # t1 = threading.Thread(target=send_table, args=(10,))
+    # t2 = threading.Thread(target=receive_table, args=(10,))
+    # t1.start()
+    # t2.start()
+    read_commands()
 
 
 if __name__ == "__main__":
