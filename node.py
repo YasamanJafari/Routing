@@ -1,3 +1,5 @@
+import socket
+import constant
 
 
 class Node:
@@ -8,7 +10,6 @@ class Node:
         self.destination = {}
         self.passing_node = {}
         self.distance_table = []
-
         self.initialize_table()
 
     def give_coordinates(self, dest, via):
@@ -72,6 +73,10 @@ class Node:
     def send_table(self):
         print("Not Implemented")
 
-
     def receive_table(self):
-        print("Not Implemented")
+        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        sock.bind((self.physical_host, self.physical_port))
+
+        while True:
+            data, address = sock.recvfrom(constant.MTU)
+            print("Received message:", data)
