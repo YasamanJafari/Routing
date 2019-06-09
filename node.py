@@ -67,8 +67,6 @@ class Node:
                 dest_coor, via_coor = self.give_coordinates(neighbour.local_virtual_IP, other.local_virtual_IP)
                 self.distance_table[dest_coor][via_coor] = (0, self.physical_port, self.physical_host)
 
-        self.print_distance_table()
-
     def num_digits(self, number):
         count = 0
         while number > 0:
@@ -107,30 +105,16 @@ class Node:
     def print_message(self, body):
         print(body)
 
-    def receive_table(self):
-        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        sock.bind((self.physical_host, self.physical_port))
-
-        while True:
-            data, address = sock.recvfrom(constant.MTU)
-            msg = pickle.loads(data)
-            header = msg[0]
-            body = msg[1]
-            source_physical_host = header[0]
-            source_physical_port = header[1]
-            destination_physical_port = header[2]
-            virtual_IP = header[3]
-            protocol_number = header[4]
-            if protocol_number == 200:
-                neigh_dist_table = body[0]
-                neigh_destination_map = body[1]
-                neigh_passing_map = body[2]
-                self.update_distance_table(self, source_physical_host, source_physical_port, virtual_IP, neigh_dist_table, neigh_destination_map, neigh_passing_map);
-            elif protocol_number == 0:
-                print(body)
-            print("Received message:", msg)
-
-    def update_distance_table(self, source_physical_host, source_physical_port, virtual_IP, neigh_dist_table, neigh_destination_map, neigh_passing_map):
+    def update_distance_table(self, message):
+        header = message[0]
+        body = message[1]
+        source_physical_host = header[0]
+        source_physical_port = header[1]
+        destination_physical_port = header[2]
+        virtual_IP = header[3]
+        neigh_dist_table = body[0]
+        neigh_destination_map = body[1]
+        neigh_passing_map = body[2]
         for destination in neigh_destination_map:
             dest_index = neigh_destination_map[destination]
             min_distance = neigh_dist_table[dest_index][0]
@@ -142,5 +126,18 @@ class Node:
             if self.distance_table[d_coor][v_coor] > min_distance:
                 updated_data = (min_distance, source_physical_port, source_physical_host)
                 self.distance_table[d_coor][v_coor] = updated_data
+
+    def receive_table(self):
+        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        sock.bind((self.physical_host, self.physical_port))
+
+        while True:
+            data, address = sock.recvfrom(constant.MTU)
+            msg = pickle.loads(data)
+            header = msg[0]
+            protocol_number = header[4]
+            self.run_handler(protocol_number)
+            print("Received message:", msg)
+
             
 
