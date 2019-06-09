@@ -165,7 +165,7 @@ class Node:
                 updated_data = (min_distance, source_physical_port, source_physical_host)
                 self.distance_table[d_coor][v_coor] = updated_data
 
-    def receive_table(self):
+    def receive_data(self):
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         sock.bind((self.physical_host, self.physical_port))
 
