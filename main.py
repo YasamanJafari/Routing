@@ -14,11 +14,14 @@ def main(file_name):
     this_node.register_handlers(0, this_node.print_message)
     t1 = threading.Thread(target=this_node.send_table)
     t2 = threading.Thread(target=this_node.receive_data)
+    # t3 = threading.Thread(target=this_node.check_for_unusable)
     t1.start()
     t2.start()
+    # t3.start()
     this_node.read_commands()
     t1.join()
     t2.join()
+    # t3.join()
 
 
 if __name__ == "__main__":

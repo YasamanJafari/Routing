@@ -12,6 +12,7 @@ class Node:
         self.destination = {}
         self.passing_node = {}
         self.distance_table = []
+        self.last_updates = []
         self.initialize_table()
         self.registered_handlers = {}
 
@@ -27,6 +28,7 @@ class Node:
     def give_coordinates(self, dest, via):
         if dest not in self.destination:
             self.distance_table.append([[(float('inf'), -1, "")] * len(self.distance_table[0])])
+            self.last_updates.append(time.time())
             self.destination[dest] = len(self.destination)
 
         dest_coor = self.destination.get(dest)
@@ -34,6 +36,8 @@ class Node:
         if via not in self.passing_node:
             for row in self.distance_table:
                 row.append((float('inf'), -1, ""))
+            for row in self.last_updates:
+                row.append(time.time())
             self.passing_node[via] = len(self.passing_node)
 
         via_coor = self.passing_node.get(via)
@@ -53,6 +57,7 @@ class Node:
         size = len(self.neighbours_info)
 
         self.distance_table = [[(float('inf'), -1, "")] * size] * size
+        self.last_updates = [0 * size] * size
 
         for neighbour in self.neighbours_info:
             neighbour_virtual = neighbour.remote_virtual_IP
@@ -61,11 +66,13 @@ class Node:
 
             dest_coor, via_coor = self.give_coordinates(neighbour_virtual, neighbour_virtual)
             self.distance_table[dest_coor][via_coor] = (1, neighbour.remote_physical_port, neighbour.remote_physical_IP)
+            self.last_updates[dest_coor][via_coor] = time.time()
 
         for neighbour in self.neighbours_info:
             for other in self.neighbours_info:
                 dest_coor, via_coor = self.give_coordinates(neighbour.local_virtual_IP, other.local_virtual_IP)
                 self.distance_table[dest_coor][via_coor] = (0, self.physical_port, self.physical_host)
+                self.last_updates[dest_coor][via_coor] = -1
 
     def num_digits(self, number):
         count = 0
@@ -160,6 +167,7 @@ class Node:
                 if min_distance > distance_info[0]:
                     min_distance = distance_info[0]
             d_coor, v_coor = self.give_coordinates(destination, virtual_IP)
+            self.last_updates[d_coor][v_coor] = time.time()
             min_distance += 1
             if self.distance_table[d_coor][v_coor] > min_distance:
                 updated_data = (min_distance, source_physical_port, source_physical_host)
