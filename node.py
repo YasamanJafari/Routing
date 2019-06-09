@@ -75,15 +75,20 @@ class Node:
             print(id_, " " * space_size, neighbor.remote_virtual_IP, " " * 5, neighbor.local_virtual_IP)
             id_ += 1
 
-    def get_header(self, destination_port, protocol):
-        return [self.physical_port, destination_port, protocol]
+    def get_header(self, destination_port, local_virtual, protocol):
+        return [self.physical_port, destination_port, local_virtual, protocol]
+
+
+    # def send_message(self, port,message):
+    #     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    #     header = self.get_header(, 200)
 
     def send_table(self):
         while True:
             for neighbour in self.neighbours_info:
                 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
                 table_info = [self.distance_table, self.destination, self.passing_node]
-                header = self.get_header(neighbour.remote_physical_port, 200)
+                header = self.get_header(neighbour.remote_physical_port, neighbour.local_virtual_IP, 200)
                 msg = pickle.dumps([header, table_info])
                 sock.sendto(msg, (neighbour.remote_physical_IP, neighbour.remote_physical_port))
             time.sleep(1)
@@ -99,7 +104,8 @@ class Node:
             body = msg[1]
             physical_port = header[0]
             destination_port = header[1]
-            protocol_number = header[2]
+            virtual_IP = header[2]
+            protocol_number = header[3]
             if protocol_number == 200:
                 neigh_dist_table = body[0]
                 neigh_destination_map = body[1]
