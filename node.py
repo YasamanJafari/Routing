@@ -192,7 +192,7 @@ class Node:
                 if min_dist[0] > dist_instance[0]:
                     min_dist = dist_instance
                     virtual_index = i
-            local_interface = self.search_for_local_interface(self.give_passign_node_virtual_by_index(virtual_index))
+            local_interface = self.search_for_local_interface(self.give_passing_node_virtual_by_index(virtual_index))
             if not min_dist[0] == float('inf'):
                 if not min_dist[0] == 0:
                     print(min_dist[0], " " * 8, dest, " " * 6, local_interface)
