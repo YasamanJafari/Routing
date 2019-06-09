@@ -43,9 +43,9 @@ class Node:
 
         self.print_distance_table()
 
-    def numDigits(self, number):
-        count  = 0
-        while(number > 0):
+    def num_digits(self, number):
+        count = 0
+        while number > 0:
             number /= 10
             count += 1
         return count
@@ -56,8 +56,8 @@ class Node:
         print("id    remote         local")
 
         for neighbor in self.neighbours_info:
-            space_size = 6 - self.numDigits(id_)
-            print(id_, " " * space_size, neighbor.remote_virtual_IP, " "* 5, neighbor.local_virtual_IP)
+            space_size = 6 - self.num_digits(id_)
+            print(id_, " " * space_size, neighbor.remote_virtual_IP, " " * 5, neighbor.local_virtual_IP)
             id_ += 1
 
 
