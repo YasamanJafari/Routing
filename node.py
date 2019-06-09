@@ -41,6 +41,14 @@ class Node:
             dest_coor, via_coor = self.give_coordinates(neighbour_virtual, neighbour_virtual)
             self.distance_table[dest_coor][via_coor] = (1, neighbour.remote_physical_port, neighbour.remote_physical_IP)
 
+        for neighbour in self.neighbours_info:
+            for other in self.neighbours_info:
+                self.destination[other.local_virtual_IP] = len(self.destination)
+                self.passing_node[neighbour.local_virtual_IP] = len(self.passing_node)
+
+                dest_coor, via_coor = self.give_coordinates(neighbour_virtual, neighbour_virtual)
+                self.distance_table[dest_coor][via_coor] = (0, self.physical_port, self.physical_host)
+
         self.print_distance_table()
 
     def num_digits(self, number):
