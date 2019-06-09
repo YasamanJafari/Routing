@@ -32,9 +32,9 @@ def read_link_data(file_name):
         if info == '':
             break
         address = info.split(" ")
-        interface = LnxBody(address[0], address[1], address[2], address[3])
+        interface = LnxBody(address[0], int(address[1]), address[2], address[3])
         interfaces_info.append(interface)
-    node_data = LnxInfo(local_phys_address[0], local_phys_address[1], interfaces_info)
+    node_data = LnxInfo(local_phys_address[0], int(local_phys_address[1]), interfaces_info)
     return node_data
 
 
@@ -64,8 +64,8 @@ def read_commands(this_node):
 def main(file_name):
     node_data = read_link_data(file_name)
     this_node = Node(node_data.local_physical_IP, node_data.local_physical_port, node_data.interfaces)
-    t1 = threading.Thread(target=this_node.send_table, args=())
-    t2 = threading.Thread(target=this_node.receive_table, args=())
+    t1 = threading.Thread(target=this_node.send_table)
+    t2 = threading.Thread(target=this_node.receive_table)
     t1.start()
     t2.start()
     read_commands(this_node)

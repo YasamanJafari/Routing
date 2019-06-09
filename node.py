@@ -85,7 +85,7 @@ class Node:
                 table_info = [self.distance_table, self.destination, self.passing_node]
                 header = self.get_header(neighbour.remote_physical_port, 200)
                 msg = pickle.dumps([header, table_info])
-                sock.sendto(bytes(msg, "utf-8"), (neighbour.remote_physical_IP, neighbour.remote_physical_port))
+                sock.sendto(msg, (neighbour.remote_physical_IP, neighbour.remote_physical_port))
             time.sleep(1)
 
     def receive_table(self):
