@@ -69,4 +69,9 @@ class Node:
             id_ += 1
 
 
+    def send_table(self):
+        print("Not Implemented")
 
+
+    def receive_table(self):
+        print("Not Implemented")
