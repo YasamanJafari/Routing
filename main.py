@@ -4,6 +4,8 @@ import sys
 import threading
 import time
 
+from node import Node
+
 
 class LnxInfo:
     def __init__(self, local_physical_host, local_physical_port, interfaces):
@@ -60,6 +62,7 @@ def read_commands():
 
 def main(file_name):
     node_data = read_link_data(file_name)
+    this_node = Node(node_data.local_physical_IP, node_data.local_physical_port, node_data.interfaces)
     # t1 = threading.Thread(target=send_table, args=(10,))
     # t2 = threading.Thread(target=receive_table, args=(10,))
     # t1.start()

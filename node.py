@@ -10,6 +10,8 @@ class Node:
         self.passing_node = {}
         self.distance_table = []
 
+        self.initialize_table()
+
     def give_coordinates(self, dest, via):
         if dest in self.destination:
             dest_coor = self.destination[dest]
@@ -18,6 +20,12 @@ class Node:
             via_coor = self.passing_node[via]
 
         return dest_coor, via_coor
+
+    def print_distance_table(self):
+        for dest in self.destination:
+            for via in self.passing_node:
+                d_coor, v_coor = self.give_coordinates(dest, via)
+                print(dest, via, self.distance_table[dest][via])
 
     def initialize_table(self):
         self.destination = {}
@@ -34,6 +42,10 @@ class Node:
 
             dest_coor, via_coor = self.give_coordinates(neighbour_virtual, neighbour_virtual)
             self.distance_table[dest_coor][via_coor] = (1, neighbour.remote_physical_port, neighbour.remote_physical_IP)
+
+        self.print_distance_table()
+
+
 
 
 
