@@ -12,14 +12,23 @@ class Node:
         self.initialize_table()
 
     def give_coordinates(self, dest, via):
-        if dest in self.destination:
-            dest_coor = self.destination.get(dest)
+        if dest not in self.destination:
+            self.distance_table.append([[(float('inf'), -1, "")] * len(self.distance_table[0])])
+            self.destination[dest] = len(self.destination)
 
-        if via in self.passing_node:
-            via_coor = self.passing_node.get(via)
+        dest_coor = self.destination.get(dest)
+
+        if via not in self.passing_node:
+            for row in self.distance_table:
+                row.append((float('inf'), -1, ""))
+            self.passing_node[via] = len(self.passing_node)
+
+        via_coor = self.passing_node.get(via)
+
         return dest_coor, via_coor
 
     def print_distance_table(self):
+        print len(self.destination), len(self.passing_node)
         for dest in self.destination:
             for via in self.passing_node:
                 d_coor, v_coor = self.give_coordinates(dest, via)
@@ -43,10 +52,7 @@ class Node:
 
         for neighbour in self.neighbours_info:
             for other in self.neighbours_info:
-                self.destination[other.local_virtual_IP] = len(self.destination)
-                self.passing_node[neighbour.local_virtual_IP] = len(self.passing_node)
-
-                dest_coor, via_coor = self.give_coordinates(neighbour_virtual, neighbour_virtual)
+                dest_coor, via_coor = self.give_coordinates(neighbour.local_virtual_IP, other.local_virtual_IP)
                 self.distance_table[dest_coor][via_coor] = (0, self.physical_port, self.physical_host)
 
         self.print_distance_table()
