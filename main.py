@@ -2,7 +2,6 @@
 
 import sys
 import threading
-import time
 
 from node import Node
 import link

@@ -176,7 +176,7 @@ class Node:
             if neighbour.remote_virtual_IP == virtual:
                 return neighbour.local_virtual_IP
 
-    def give_passign_node_virtual_by_index(self, index):
+    def give_passing_node_virtual_by_index(self, index):
         for virtual, i in self.passing_node.items():
             if index == i:
                 return virtual
