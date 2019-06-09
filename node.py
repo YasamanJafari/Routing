@@ -125,6 +125,22 @@ class Node:
                 neigh_dist_table = body[0]
                 neigh_destination_map = body[1]
                 neigh_passing_map = body[2]
+                self.update_distance_table(self, source_physical_host, source_physical_port, virtual_IP, neigh_dist_table, neigh_destination_map, neigh_passing_map);
             elif protocol_number == 0:
                 print(body)
             print("Received message:", msg)
+
+    def update_distance_table(self, source_physical_host, source_physical_port, virtual_IP, neigh_dist_table, neigh_destination_map, neigh_passing_map):
+        for destination in neigh_destination_map:
+            dest_index = neigh_destination_map[destination]
+            min_distance = neigh_dist_table[dest_index][0]
+            for distance_info in neigh_dist_table[dest_index]:
+                if min_distance > distance_info[0]:
+                    min_distance = distance_info[0]
+            d_coor, v_coor = self.give_coordinates(destination, virtual_IP)
+            min_distance += 1
+            if self.distance_table[d_coor][v_coor] > min_distance:
+                updated_data = (min_distance, source_physical_port, source_physical_host)
+                self.distance_table[d_coor][v_coor] = updated_data
+            
+
