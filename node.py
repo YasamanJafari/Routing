@@ -90,22 +90,26 @@ class Node:
     def read_commands(self):
         while True:
             text = input("> ")
-            if text == "interfaces" or text == "li":
+            items = (text.split(" "))
+            if items[0] == "interfaces" or text == "li":
                 self.show_interfaces()
 
-            elif text == "routes" or text == "lr":
+            elif items[0] == "routes" or text == "lr":
                 print("Not Implemented.")
 
-            elif text == "down":
+            elif items[0] == "down":
                 print("Not Implemented.")
 
-            elif text == "up":
+            elif items[0] == "up":
                 print("Not Implemented.")
 
-            elif text == "send":
-                print("Not Implemented.")
+            elif items[0] == "send":
+                if len(items) != 4:
+                    print("Invalid form. Press help for more info.")
+                else:
+                    self.send_message(items[1], int(items[2]), items[3])
 
-            elif text == "q":
+            elif items[0] == "q":
                 print("Not Implemented.")
                 break
 
@@ -119,10 +123,12 @@ class Node:
                       "- send [ip] [protocol] [payload]: sends payload with protocol=protocol to virtual-ip ip\n"
                       "- q: quit this node\n")
 
-
-    # def send_message(self, port, message):
-    #     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    #     header = self.get_header(, 0)
+    def send_message(self, dest, protocol_number, message):
+        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        local_interface, min_dist, physical_addr = self.find_hop(dest)
+        header = self.get_header(physical_addr[1], "", protocol_number)
+        msg = pickle.dumps([header, message])
+        sock.sendto(msg, (physical_addr[0], physical_addr[1]))
 
     def send_table(self):
         while True:
@@ -181,18 +187,24 @@ class Node:
             if index == i:
                 return virtual
 
+    def find_hop(self, dest):
+        dest_index = self.destination[dest]
+        min_dist = self.distance_table[dest_index][0]
+        virtual_index = 0
+        for dist_instance, i in enumerate(self.distance_table[dest_index]):
+            if min_dist[0] > dist_instance[0]:
+                min_dist = dist_instance
+                virtual_index = i
+                physical_port = dist_instance[1]
+                physical_IP = dist_instance[2]
+        local_interface = self.search_for_local_interface(self.give_passing_node_virtual_by_index(virtual_index))
+        return local_interface, min_dist, (physical_IP, physical_port)
+
     def show_routes(self):
         print("cost    dst             loc")
 
         for dest in self.destination:
-            dest_index = self.destination[dest]
-            min_dist = self.distance_table[dest_index][0]
-            virtual_index = 0
-            for dist_instance, i in enumerate(self.distance_table[dest_index]):
-                if min_dist[0] > dist_instance[0]:
-                    min_dist = dist_instance
-                    virtual_index = i
-            local_interface = self.search_for_local_interface(self.give_passing_node_virtual_by_index(virtual_index))
+            local_interface, min_dist, addr = self.find_hop(dest)
             if not min_dist[0] == float('inf'):
                 if not min_dist[0] == 0:
                     print(min_dist[0], " " * 8, dest, " " * 6, local_interface)
