@@ -1,4 +1,3 @@
-import math
 
 
 class Node:
@@ -14,18 +13,17 @@ class Node:
 
     def give_coordinates(self, dest, via):
         if dest in self.destination:
-            dest_coor = self.destination[dest]
+            dest_coor = self.destination.get(dest)
 
         if via in self.passing_node:
-            via_coor = self.passing_node[via]
-
+            via_coor = self.passing_node.get(via)
         return dest_coor, via_coor
 
     def print_distance_table(self):
         for dest in self.destination:
             for via in self.passing_node:
                 d_coor, v_coor = self.give_coordinates(dest, via)
-                print(dest, via, self.distance_table[dest][via])
+                print(dest, via, self.distance_table[d_coor][v_coor])
 
     def initialize_table(self):
         self.destination = {}
@@ -33,7 +31,7 @@ class Node:
 
         size = len(self.neighbours_info)
 
-        self.distance_table = [[(math.inf, -1, "")] * size] * size
+        self.distance_table = [[(float('inf'), -1, "")] * size] * size
 
         for neighbour in self.neighbours_info:
             neighbour_virtual = neighbour.remote_virtual_IP
