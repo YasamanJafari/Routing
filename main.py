@@ -24,12 +24,12 @@ def read_link_data(file_name):
     contents = f.read()
     data = contents.split("\n")
     local_phys_addr = data[0].split(" ")
-    interfacesInfo = []
+    interfaces_info = []
     for info in data[1:]:
         address = info.split(" ")
         interface = LnxBody(address[0], address[1], address[2], address[3])
-        interfacesInfo.append(interface)
-    nodeData = LnxInfo(local_phys_addr[0], local_phys_addr[1], interfacesInfo)
+        interfaces_info.append(interface)
+    nodeData = LnxInfo(local_phys_addr[0], local_phys_addr[1], interfaces_info)
     return nodeData
 
 
