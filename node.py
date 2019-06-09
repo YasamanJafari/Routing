@@ -25,18 +25,25 @@ class Node:
         self.protocol_switcher.get(protocol_num, lambda _: print("This protocol number is not registered."))
 
     def give_coordinates(self, dest, via):
+        if via not in self.passing_node:
+            for row in self.distance_table:
+                row.append((float('inf'), -1, ""))
+            self.passing_node[via] = len(self.passing_node)
+
+            self.destination[dest] = len(self.destination)
+            if len(self.distance_table) > 0:
+                self.distance_table.append([[(float('inf'), -1, "")] * len(self.distance_table[0])])
+            else:
+                self.distance_table.append([[(float('inf'), -1, "")]])
+        via_coor = self.passing_node.get(via)
+
         if dest not in self.destination:
             self.distance_table.append([[(float('inf'), -1, "")] * len(self.distance_table[0])])
             self.destination[dest] = len(self.destination)
 
         dest_coor = self.destination.get(dest)
 
-        if via not in self.passing_node:
-            for row in self.distance_table:
-                row.append((float('inf'), -1, ""))
-            self.passing_node[via] = len(self.passing_node)
 
-        via_coor = self.passing_node.get(via)
 
         return dest_coor, via_coor
 
@@ -54,13 +61,13 @@ class Node:
 
         self.distance_table = [[(float('inf'), -1, "")] * size] * size
 
-        for neighbour in self.neighbours_info:
-            neighbour_virtual = neighbour.remote_virtual_IP
-            self.destination[neighbour_virtual] = len(self.destination)
-            self.passing_node[neighbour_virtual] = len(self.passing_node)
-
-            dest_coor, via_coor = self.give_coordinates(neighbour_virtual, neighbour_virtual)
-            self.distance_table[dest_coor][via_coor] = (1, neighbour.remote_physical_port, neighbour.remote_physical_IP)
+        # for neighbour in self.neighbours_info:
+        #     neighbour_virtual = neighbour.remote_virtual_IP
+        #     self.destination[neighbour_virtual] = len(self.destination)
+        #     self.passing_node[neighbour_virtual] = len(self.passing_node)
+        #
+        #     dest_coor, via_coor = self.give_coordinates(neighbour_virtual, neighbour_virtual)
+        #     self.distance_table[dest_coor][via_coor] = (1, neighbour.remote_physical_port, neighbour.remote_physical_IP)
 
         for neighbour in self.neighbours_info:
             for other in self.neighbours_info:
@@ -142,11 +149,12 @@ class Node:
         body = message[1]
         source_physical_host = header[0]
         source_physical_port = header[1]
-        destination_physical_port = header[2]
         virtual_IP = header[3]
         neigh_dist_table = body[0]
         neigh_destination_map = body[1]
-        neigh_passing_map = body[2]
+        d_coor, v_coor = self.give_coordinates(virtual_IP, virtual_IP)
+        if not (self.distance_table[d_coor][v_coor] == 1):
+            self.distance_table[d_coor][v_coor] = 1
         for destination in neigh_destination_map:
             dest_index = neigh_destination_map[destination]
             min_distance = neigh_dist_table[dest_index][0]
