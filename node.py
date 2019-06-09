@@ -43,9 +43,14 @@ class Node:
 
         dest_coor = self.destination.get(dest)
 
-
-
         return dest_coor, via_coor
+
+    # def check_for_unusable(self):
+    #     for i in range(len(self.last_updates)):
+    #         updated = False
+    #         for j in range(len(self.last_updates[i])):
+    #
+
 
     def print_distance_table(self):
         for dest in self.destination:
