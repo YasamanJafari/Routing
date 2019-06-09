@@ -60,12 +60,22 @@ def read_commands(this_node):
             print("Not Implemented.")
             break
 
+        else:
+            print("- help, h: Print this list of commands\n"
+                  "- interfaces: Print information about each interface, one per line\n"
+                  "- routes: Print information about the route to each known destination, one per line\n"
+                  "- up [integer]: Bring an interface \"up\" (it must be an existing interface, "
+                  "probably one you brought down)\n"
+                  "- down [integer]: Bring an interface \"down\"\n"
+                  "- send [ip] [protocol] [payload]: sends payload with protocol=protocol to virtual-ip ip\n"
+                  "- q: quit this node\n")
+
 
 def main(file_name):
     node_data = read_link_data(file_name)
     this_node = Node(node_data.local_physical_IP, node_data.local_physical_port, node_data.interfaces)
-    t1 = threading.Thread(target=this_node.send_table, args=())
-    t2 = threading.Thread(target=this_node.receive_table, args=())
+    t1 = threading.Thread(target=this_node.send_table)
+    t2 = threading.Thread(target=this_node.receive_table)
     t1.start()
     t2.start()
     read_commands(this_node)
@@ -73,4 +83,3 @@ def main(file_name):
 
 if __name__ == "__main__":
     main(sys.argv[1])
-
