@@ -81,7 +81,7 @@ class Node:
 
     # def send_message(self, port,message):
     #     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    #     header = self.get_header(, 200)
+    #     header = self.get_header(, 0)
 
     def send_table(self):
         while True:

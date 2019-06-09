@@ -41,10 +41,10 @@ def read_link_data(file_name):
 def read_commands(this_node):
     while True:
         text = input("> ")
-        if text == "interfaces":
+        if text == "interfaces" or text == "li":
             this_node.show_interfaces()
 
-        elif text == "routes":
+        elif text == "routes" or text == "lr":
             print("Not Implemented.")
 
         elif text == "down":
@@ -62,8 +62,8 @@ def read_commands(this_node):
 
         else:
             print("- help, h: Print this list of commands\n"
-                  "- interfaces: Print information about each interface, one per line\n"
-                  "- routes: Print information about the route to each known destination, one per line\n"
+                  "- interfaces, li: Print information about each interface, one per line\n"
+                  "- routes, lr: Print information about the route to each known destination, one per line\n"
                   "- up [integer]: Bring an interface \"up\" (it must be an existing interface, "
                   "probably one you brought down)\n"
                   "- down [integer]: Bring an interface \"down\"\n"
@@ -79,6 +79,8 @@ def main(file_name):
     t1.start()
     t2.start()
     read_commands(this_node)
+    t1.join()
+    t2.join()
 
 
 if __name__ == "__main__":
