@@ -87,6 +87,38 @@ class Node:
     def get_header(self, destination_port, local_virtual, protocol):
         return [self.physical_host, self.physical_port, destination_port, local_virtual, protocol]
 
+    def read_commands(self):
+        while True:
+            text = input("> ")
+            if text == "interfaces" or text == "li":
+                self.show_interfaces()
+
+            elif text == "routes" or text == "lr":
+                print("Not Implemented.")
+
+            elif text == "down":
+                print("Not Implemented.")
+
+            elif text == "up":
+                print("Not Implemented.")
+
+            elif text == "send":
+                print("Not Implemented.")
+
+            elif text == "q":
+                print("Not Implemented.")
+                break
+
+            else:
+                print("- help, h: Print this list of commands\n"
+                      "- interfaces, li: Print information about each interface, one per line\n"
+                      "- routes, lr: Print information about the route to each known destination, one per line\n"
+                      "- up [integer]: Bring an interface \"up\" (it must be an existing interface, "
+                      "probably one you brought down)\n"
+                      "- down [integer]: Bring an interface \"down\"\n"
+                      "- send [ip] [protocol] [payload]: sends payload with protocol=protocol to virtual-ip ip\n"
+                      "- q: quit this node\n")
+
 
     # def send_message(self, port, message):
     #     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
