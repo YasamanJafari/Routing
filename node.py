@@ -22,8 +22,11 @@ class Node:
         else:
             self.registered_handlers[protocol_num] = handler
 
-    def run_handler(self, protocol_num):
-        self.protocol_switcher.get(protocol_num, lambda _: print("This protocol number is not registered."))
+    def run_handler(self, packet):
+        if packet[0][4] in self.registered_handlers:
+            self.registered_handlers.get(packet[0][4])(packet)
+        else:
+            print("This protocol number is not registered.")
 
     def give_coordinates(self, dest, via):
         if via not in self.passing_node:
@@ -149,8 +152,8 @@ class Node:
                 sock.sendto(msg, (neighbour.remote_physical_IP, neighbour.remote_physical_port))
             time.sleep(1)
 
-    def print_message(self, body):
-        print(body)
+    def print_message(self, message):
+        print(message[1])
 
     def update_distance_table(self, message):
         header = message[0]
@@ -185,8 +188,8 @@ class Node:
             msg = pickle.loads(data)
             header = msg[0]
             protocol_number = header[4]
-            self.run_handler(protocol_number)
-            print("Received message:", msg)
+            self.run_handler(protocol_number, msg)
+            # print("Received message:", msg)
 
     def search_for_local_interface(self, virtual):
         for neighbour in self.neighbours_info:
