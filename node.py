@@ -68,7 +68,7 @@ class Node:
     def show_interfaces(self):
         id_ = 0
 
-        print("id    remote         local")
+        print("id    rem            loc")
 
         for neighbor in self.neighbours_info:
             space_size = 6 - self.num_digits(id_)
@@ -128,5 +128,31 @@ class Node:
             if self.distance_table[d_coor][v_coor] > min_distance:
                 updated_data = (min_distance, source_physical_port, source_physical_host)
                 self.distance_table[d_coor][v_coor] = updated_data
-            
 
+    def search_for_local_interface(self, virtual):
+        for neighbour in self.neighbours_info:
+            if neighbour.remote_virtual_IP == virtual:
+                return neighbour.local_virtual_IP
+
+    def give_passign_node_virtual_by_index(self, index):
+        for virtual, i in self.passing_node.items():
+            if index == i:
+                return virtual
+
+    def show_routes(self):
+        print("cost    dst             loc")
+
+        for dest in self.destination:
+            dest_index = self.destination[dest]
+            min_dist = self.distance_table[dest_index][0]
+            virtual_index = 0
+            for dist_instance, i in enumerate(self.distance_table[dest_index]):
+                if min_dist[0] > dist_instance[0]:
+                    min_dist = dist_instance
+                    virtual_index = i
+            local_interface = self.search_for_local_interface(self.give_passign_node_virtual_by_index(virtual_index))
+            if not min_dist[0] == float('inf'):
+                if not min_dist[0] == 0:
+                    print(min_dist[0], " " * 8, dest, " " * 6, local_interface)
+                else:
+                    print(0, " " * 8, dest, " " * 6, dest)
