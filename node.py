@@ -1,4 +1,7 @@
-
+import socket
+import constant
+import pickle
+import time
 
 class Node:
     def __init__(self, physical_host, physical_port, neighbours_info):
@@ -8,7 +11,6 @@ class Node:
         self.destination = {}
         self.passing_node = {}
         self.distance_table = []
-
         self.initialize_table()
 
     def give_coordinates(self, dest, via):
@@ -28,7 +30,6 @@ class Node:
         return dest_coor, via_coor
 
     def print_distance_table(self):
-        print len(self.destination), len(self.passing_node)
         for dest in self.destination:
             for via in self.passing_node:
                 d_coor, v_coor = self.give_coordinates(dest, via)
@@ -74,5 +75,35 @@ class Node:
             print(id_, " " * space_size, neighbor.remote_virtual_IP, " " * 5, neighbor.local_virtual_IP)
             id_ += 1
 
+    def get_header(self, destination_port, protocol):
+        return [self.physical_port, destination_port, protocol]
 
+    def send_table(self):
+        while True:
+            for neighbour in self.neighbours_info:
+                sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+                table_info = [self.distance_table, self.destination, self.passing_node]
+                header = self.get_header(neighbour.remote_physical_port, 200)
+                msg = pickle.dumps([header, table_info])
+                sock.sendto(bytes(msg, "utf-8"), (neighbour.remote_physical_IP, neighbour.remote_physical_port))
+            time.sleep(1)
 
+    def receive_table(self):
+        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        sock.bind((self.physical_host, self.physical_port))
+
+        while True:
+            data, address = sock.recvfrom(constant.MTU)
+            msg = pickle.loads(data)
+            header = msg[0]
+            body = msg[1]
+            physical_port = header[0]
+            destination_port = header[1]
+            protocol_number = header[2]
+            if protocol_number == 200:
+                neigh_dist_table = body[0]
+                neigh_destination_map = body[1]
+                neigh_passing_map = body[2]
+            elif protocol_number == 0:
+                print(body)
+            print("Received message:", msg)
