@@ -76,7 +76,7 @@ class Node:
             id_ += 1
 
     def get_header(self, destination_port, local_virtual, protocol):
-        return [self.physical_port, destination_port, local_virtual, protocol]
+        return [self.physical_host, self.physical_port, destination_port, local_virtual, protocol]
 
 
     # def send_message(self, port,message):
@@ -102,10 +102,11 @@ class Node:
             msg = pickle.loads(data)
             header = msg[0]
             body = msg[1]
-            physical_port = header[0]
-            destination_port = header[1]
-            virtual_IP = header[2]
-            protocol_number = header[3]
+            source_physical_host = header[0]
+            source_physical_port = header[1]
+            destination_physical_port = header[2]
+            virtual_IP = header[3]
+            protocol_number = header[4]
             if protocol_number == 200:
                 neigh_dist_table = body[0]
                 neigh_destination_map = body[1]
