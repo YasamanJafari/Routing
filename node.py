@@ -3,6 +3,7 @@ import constant
 import pickle
 import time
 
+
 class Node:
     def __init__(self, physical_host, physical_port, neighbours_info):
         self.physical_host = physical_host
@@ -12,6 +13,16 @@ class Node:
         self.passing_node = {}
         self.distance_table = []
         self.initialize_table()
+        self.registered_handlers = {}
+
+    def register_handlers(self, protocol_num, handler):
+        if protocol_num in self.registered_handlers:
+            print("This protocol number is already registered.")
+        else:
+            self.registered_handlers[protocol_num] = handler
+
+    def run_handler(self, protocol_num):
+        self.protocol_switcher.get(protocol_num, lambda _: print("This protocol number is not registered."))
 
     def give_coordinates(self, dest, via):
         if dest not in self.destination:
@@ -79,7 +90,7 @@ class Node:
         return [self.physical_host, self.physical_port, destination_port, local_virtual, protocol]
 
 
-    # def send_message(self, port,message):
+    # def send_message(self, port, message):
     #     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     #     header = self.get_header(, 0)
 
@@ -92,6 +103,9 @@ class Node:
                 msg = pickle.dumps([header, table_info])
                 sock.sendto(msg, (neighbour.remote_physical_IP, neighbour.remote_physical_port))
             time.sleep(1)
+
+    def print_message(self, body):
+        print(body)
 
     def receive_table(self):
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
