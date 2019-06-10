@@ -93,7 +93,6 @@ class Node:
                 dest_coor, via_coor = self.give_coordinates(neighbour.local_virtual_IP, other.local_virtual_IP)
                 self.distance_table[dest_coor][via_coor] = [0, self.physical_port, self.physical_host]
                 self.last_updates[dest_coor][via_coor] = -1
-        self.print_distance_table()
 
     def num_digits(self, number):
         count = 0
@@ -179,6 +178,10 @@ class Node:
             dest_index = neigh_destination_map[destination]
             min_distance = neigh_dist_table[dest_index][0][0]
             for distance_info in neigh_dist_table[dest_index]:
+                print("*******")
+                print(min_distance)
+                print(distance_info)
+                print("^^^^^^^")
                 if min_distance > distance_info[0]:
                     min_distance = distance_info[0]
             d_coor, v_coor = self.give_coordinates(destination, virtual_IP)
