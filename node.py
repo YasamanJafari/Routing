@@ -187,7 +187,7 @@ class Node:
             d_coor, v_coor = self.give_coordinates(destination, virtual_IP)
             self.last_updates[d_coor][v_coor] = time.time()
             min_distance += 1
-            if self.distance_table[d_coor][v_coor][0] > min_distance:
+            if self.distance_table[d_coor][v_coor][0] >= min_distance:
                 updated_data = [min_distance, source_physical_port, source_physical_host]
                 self.distance_table[d_coor][v_coor] = updated_data
                 self.last_updates[d_coor][v_coor] = time.time()
