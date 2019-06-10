@@ -145,12 +145,18 @@ class Node:
                       "- send [ip] [protocol] [payload]: sends payload with protocol=protocol to virtual-ip ip\n"
                       "- q: quit this node\n")
 
+    def find_addr(self, local_interface):
+        for neigbour in self.neighbours_info:
+            if neigbour.local_virtual_IP == local_interface:
+                return neigbour.remote_physical_port, neigbour.remote_physical_IP
+
     def send_message(self, dest, protocol_number, message):
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        local_interface, min_dist, physical_addr = self.find_hop(dest)
-        header = self.get_header(physical_addr[1], "", protocol_number)
+        local_interface, min_dist = self.find_hop(dest)
+        port, host = self.find_addr(local_interface)
+        header = self.get_header(port, local_interface, protocol_number)
         msg = pickle.dumps([header, message])
-        sock.sendto(msg, (physical_addr[0], physical_addr[1]))
+        sock.sendto(msg, (host, port))
 
     def send_table(self):
         while True:
@@ -205,22 +211,18 @@ class Node:
     def find_hop(self, dest):
         dest_index = self.destination[dest]
         min_dist = self.distance_table[dest_index][0][0]
-        physical_port = self.distance_table[dest_index][0][1]
-        physical_IP = self.distance_table[dest_index][0][2]
         virtual_index = 0
         i = 0
         for dist_instance in self.distance_table[dest_index]:
             if min_dist > dist_instance[0]:
                 min_dist = dist_instance[0]
                 virtual_index = i
-                physical_port = dist_instance[1]
-                physical_IP = dist_instance[2]
             i += 1
         if not min_dist ==0:
             local_interface = self.search_for_local_interface(self.give_passing_node_virtual_by_index(virtual_index))
         else:
             local_interface = dest
-        return local_interface, min_dist, (physical_IP, physical_port)
+        return local_interface, min_dist
 
     def show_interfaces(self):
         id_ = 0
@@ -236,7 +238,7 @@ class Node:
         print("cost    dst             loc")
 
         for dest in self.destination:
-            local_interface, min_dist, addr = self.find_hop(dest)
+            local_interface, min_dist = self.find_hop(dest)
             if not min_dist == float('inf'):
                 space_size = 8 - self.num_digits(min_dist)
                 print(str(min_dist) + " " * space_size + dest + " " * 5 + local_interface)
