@@ -99,7 +99,7 @@ class Node:
         if number == 0:
             return 1
         while number > 0:
-            number /= 10
+            number = int(number/10)
             count += 1
         return count
 
@@ -178,10 +178,6 @@ class Node:
             dest_index = neigh_destination_map[destination]
             min_distance = neigh_dist_table[dest_index][0][0]
             for distance_info in neigh_dist_table[dest_index]:
-                print("*******")
-                print(min_distance)
-                print(distance_info)
-                print("^^^^^^^")
                 if min_distance > distance_info[0]:
                     min_distance = distance_info[0]
             d_coor, v_coor = self.give_coordinates(destination, virtual_IP)
@@ -191,7 +187,6 @@ class Node:
                 updated_data = [min_distance, source_physical_port, source_physical_host]
                 self.distance_table[d_coor][v_coor] = updated_data
                 self.last_updates[d_coor][v_coor] = time.time()
-        self.print_distance_table()
 
     def receive_data(self):
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
