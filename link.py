@@ -26,6 +26,12 @@ class Link:
         self.run_handler = run_handler
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.sock.bind((physical_host, physical_port))
+        self.send_sockets = []
+
+    def create_neighbour_sockets(self, neighbours_count):
+        for i in range(0, neighbours_count):
+            sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            self.send_sockets.append(sock)
 
     def receive(self):
         return self.sock.recvfrom(constant.MTU)
@@ -36,10 +42,9 @@ class Link:
             msg = pickle.loads(data)
             self.run_handler(msg)
 
-    def send_table(self, message, neigh_remote_physical_port, neigh_local_virtual_host):
-        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    def send_table(self, message, neigh_remote_physical_port, neigh_local_virtual_host, index):
         msg = pickle.dumps(message)
-        sock.sendto(msg, (neigh_local_virtual_host, neigh_remote_physical_port))
+        self.send_sockets[index].sendto(msg, (neigh_local_virtual_host, neigh_remote_physical_port))
 
 
 def read_link_data(file_name):

@@ -16,6 +16,7 @@ class Node:
         self.initialize_table()
         self.registered_handlers = {}
         self.link = Link(self.run_handler, self.physical_host, self.physical_port)
+        self.link.create_neighbour_sockets(len(neighbours_info))
 
     def register_handlers(self, protocol_num, handler):
         if protocol_num in self.registered_handlers:
@@ -154,9 +155,12 @@ class Node:
     def send_table(self):
         while True:
             table_info = [self.distance_table, self.destination, self.passing_node]
+            i = 0
             for neighbour in self.neighbours_info:
                 header = self.get_header(neighbour.remote_physical_port, neighbour.local_virtual_IP, 200)
-                self.link.send_table([header, table_info], neighbour.remote_physical_port, neighbour.local_virtual_IP)
+                self.link.send_table([header, table_info],
+                                     neighbour.remote_physical_port, neighbour.local_virtual_IP, i)
+                i += 1
             time.sleep(1)
 
     def print_message(self, message):
@@ -178,10 +182,6 @@ class Node:
             dest_index = neigh_destination_map[destination]
             min_distance = neigh_dist_table[dest_index][0][0]
             for distance_info in neigh_dist_table[dest_index]:
-                print("***")
-                print(min_distance)
-                print(distance_info)
-                print("^^^")
                 if min_distance > distance_info[0]:
                     min_distance = distance_info[0]
             d_coor, v_coor = self.give_coordinates(destination, virtual_IP)
