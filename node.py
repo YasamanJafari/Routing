@@ -195,6 +195,7 @@ class Node:
         for neighbour in self.neighbours_info:
             if neighbour.remote_virtual_IP == virtual:
                 return neighbour.local_virtual_IP
+            return virtual
 
     def give_passing_node_virtual_by_index(self, index):
         for virtual, i in self.passing_node.items():
