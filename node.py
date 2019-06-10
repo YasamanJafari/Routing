@@ -179,7 +179,7 @@ class Node:
             self.distance_table[d_coor][v_coor] = 1
         for destination in neigh_destination_map:
             dest_index = neigh_destination_map[destination]
-            min_distance = neigh_dist_table[dest_index][0]
+            min_distance = neigh_dist_table[dest_index][0][0]
             for distance_info in neigh_dist_table[dest_index]:
                 if min_distance > distance_info[0]:
                     min_distance = distance_info[0]
@@ -191,7 +191,7 @@ class Node:
             print(v_coor)
             print("###")
             self.last_updates[d_coor][v_coor] = time.time()
-            min_distance += 1
+            min_distance = min_distance+1
             if self.distance_table[d_coor][v_coor] > min_distance:
                 updated_data = (min_distance, source_physical_port, source_physical_host)
                 self.distance_table[d_coor][v_coor] = updated_data
@@ -206,7 +206,7 @@ class Node:
             msg = pickle.loads(data)
             header = msg[0]
             protocol_number = header[4]
-            self.run_handler(protocol_number, msg)
+            self.run_handler(msg)
             # print("Received message:", msg)
 
     def search_for_local_interface(self, virtual):
