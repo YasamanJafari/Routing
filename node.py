@@ -2,6 +2,7 @@ import socket
 import constant
 import pickle
 import time
+from link import Link
 
 
 class Node:
@@ -15,6 +16,7 @@ class Node:
         self.last_updates = []
         self.initialize_table()
         self.registered_handlers = {}
+        self.link = Link(self.print_message, self.update_distance_table)
 
     def register_handlers(self, protocol_num, handler):
         if protocol_num in self.registered_handlers:
@@ -187,18 +189,6 @@ class Node:
                 updated_data = [min_distance, source_physical_port, source_physical_host]
                 self.distance_table[d_coor][v_coor] = updated_data
                 self.last_updates[d_coor][v_coor] = time.time()
-
-    def receive_data(self):
-        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        sock.bind((self.physical_host, self.physical_port))
-
-        while True:
-            data, address = sock.recvfrom(constant.MTU)
-            msg = pickle.loads(data)
-            header = msg[0]
-            protocol_number = header[4]
-            self.run_handler(msg)
-            # print("Received message:", msg)
 
     def search_for_local_interface(self, virtual):
         for neighbour in self.neighbours_info:
