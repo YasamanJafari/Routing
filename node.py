@@ -33,23 +33,23 @@ class Node:
     def give_coordinates(self, dest, via):
         if via not in self.passing_node:
             for row in self.distance_table:
-                row.append((float('inf'), -1, ""))
+                row.append([float('inf'), -1, ""])
             for row in self.last_updates:
                 row.append(0)
             self.passing_node[via] = len(self.passing_node)
 
             self.destination[dest] = len(self.destination)
             if len(self.distance_table) > 0:
-                self.distance_table.append([(float('inf'), -1, "")] * len(self.distance_table[0]))
+                self.distance_table.append([[float('inf'), -1, ""]] * len(self.distance_table[0]))
                 self.last_updates.append([0] * len(self.last_updates[0]))
 
             else:
-                self.distance_table.append([(float('inf'), -1, "")])
+                self.distance_table.append([[float('inf'), -1, ""]])
                 self.last_updates.append([0])
         via_coor = self.passing_node.get(via)
 
         if dest not in self.destination:
-            self.distance_table.append([(float('inf'), -1, "")] * len(self.distance_table[0]))
+            self.distance_table.append([[float('inf'), -1, ""]] * len(self.distance_table[0]))
             # self.last_updates.append(time.time())
             self.last_updates.append([0] * len(self.last_updates[0]))
             self.destination[dest] = len(self.destination)
@@ -66,10 +66,12 @@ class Node:
 
     def print_distance_table(self):
         for dest in self.destination:
-            print(dest,)
+            print(dest, end="    ")
+        print(" ")
         for i in range(len(self.distance_table)):
             for j in range(len(self.distance_table[i])):
-                print(self.distance_table[i][j], )
+                print(self.distance_table[i][j][0], end="              ")
+            print(" ")
 
     def initialize_table(self):
         self.destination = {}
@@ -91,7 +93,7 @@ class Node:
         for neighbour in self.neighbours_info:
             for other in self.neighbours_info:
                 dest_coor, via_coor = self.give_coordinates(neighbour.local_virtual_IP, other.local_virtual_IP)
-                self.distance_table[dest_coor][via_coor] = (0, self.physical_port, self.physical_host)
+                self.distance_table[dest_coor][via_coor] = [0, self.physical_port, self.physical_host]
                 self.last_updates[dest_coor][via_coor] = -1
 
     def num_digits(self, number):
@@ -172,7 +174,7 @@ class Node:
         neigh_dist_table = body[0]
         neigh_destination_map = body[1]
         d_coor, v_coor = self.give_coordinates(virtual_IP, virtual_IP)
-        if not (self.distance_table[d_coor][v_coor] == 1):
+        if not (self.distance_table[d_coor][v_coor][0] == 1):
             self.distance_table[d_coor][v_coor][0] = 1
         for destination in neigh_destination_map:
             dest_index = neigh_destination_map[destination]
@@ -182,10 +184,10 @@ class Node:
                     min_distance = distance_info[0]
             d_coor, v_coor = self.give_coordinates(destination, virtual_IP)
             self.last_updates[d_coor][v_coor] = time.time()
-            min_distance = min_distance+1
-            if self.distance_table[d_coor][v_coor] > min_distance:
-                updated_data = (min_distance, source_physical_port, source_physical_host)
-                self.distance_table[d_coor][v_coor][0] = updated_data
+            min_distance += 1
+            if self.distance_table[d_coor][v_coor][0] > min_distance:
+                updated_data = [min_distance, source_physical_port, source_physical_host]
+                self.distance_table[d_coor][v_coor] = updated_data
                 self.last_updates[d_coor][v_coor] = time.time()
         self.print_distance_table()
 
