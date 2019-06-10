@@ -1,4 +1,8 @@
-class Link:
+import socket
+import pickle
+import constant
+
+class LnxInfo:
     def __init__(self, local_physical_host, local_physical_port):
         self.local_physical_IP = local_physical_host
         self.local_physical_port = local_physical_port
@@ -16,12 +20,29 @@ class LnxBody:
         self.remote_virtual_IP = remote_virtual
 
 
+class Link:
+    def __init__(self, print_message, update_table, physical_host, physical_port):
+        self.print_message = print_message
+        self.update_table = update_table
+        self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.sock.bind((physical_host, physical_port))
+
+    def receive(self):
+        return self.sock.recvfrom(constant.MTU)
+
+    def receive_data(self):
+        while True:
+            data, address = self.receive()
+            msg = pickle.loads(data)
+            self.run_handler(msg)
+
+
 def read_link_data(file_name):
     f = open(file_name, "r")
     contents = f.read()
     data = contents.split("\n")
     local_phys_address = data[0].split(" ")
-    link = Link(local_phys_address[0], int(local_phys_address[1]))
+    link = LnxInfo(local_phys_address[0], int(local_phys_address[1]))
     for info in data[1:]:
         if info == '':
             break
