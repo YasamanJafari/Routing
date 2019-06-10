@@ -77,19 +77,6 @@ class Node:
         self.destination = {}
         self.passing_node = {}
 
-        # size = len(self.neighbours_info)
-
-        # self.distance_table = [[(float('inf'), -1, "")] * size] * size
-        # self.last_updates = [0 * size] * size
-
-        # for neighbour in self.neighbours_info:
-        #     neighbour_virtual = neighbour.remote_virtual_IP
-        #     self.destination[neighbour_virtual] = len(self.destination)
-        #     self.passing_node[neighbour_virtual] = len(self.passing_node)
-        #
-        #     dest_coor, via_coor = self.give_coordinates(neighbour_virtual, neighbour_virtual)
-        #     self.distance_table[dest_coor][via_coor] = (1, neighbour.remote_physical_port, neighbour.remote_physical_IP)
-
         for neighbour in self.neighbours_info:
             for other in self.neighbours_info:
                 dest_coor, via_coor = self.give_coordinates(neighbour.local_virtual_IP, other.local_virtual_IP)
@@ -146,17 +133,17 @@ class Node:
                       "- q: quit this node\n")
 
     def find_addr(self, local_interface):
+        i = 0
         for neigbour in self.neighbours_info:
             if neigbour.local_virtual_IP == local_interface:
-                return neigbour.remote_physical_port, neigbour.remote_physical_IP
+                return neigbour.remote_physical_port, neigbour.remote_physical_IP, i
+            i += 1
 
     def send_message(self, dest, protocol_number, message):
-        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         local_interface, min_dist = self.find_hop(dest)
-        port, host = self.find_addr(local_interface)
+        port, host, i = self.find_addr(local_interface)
         header = self.get_header(port, local_interface, protocol_number)
-        msg = pickle.dumps([header, message])
-        sock.sendto(msg, (host, port))
+        self.link.send_message([header, message], port, host, i)
 
     def send_table(self):
         while True:
@@ -164,7 +151,7 @@ class Node:
             i = 0
             for neighbour in self.neighbours_info:
                 header = self.get_header(neighbour.remote_physical_port, neighbour.local_virtual_IP, 200)
-                self.link.send_table([header, table_info],
+                self.link.send_message([header, table_info],
                                      neighbour.remote_physical_port, neighbour.remote_physical_IP, i)
                 i += 1
             time.sleep(1)

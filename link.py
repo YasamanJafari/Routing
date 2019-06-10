@@ -45,7 +45,7 @@ class Link:
             msg = pickle.loads(data)
             self.run_handler(msg)
 
-    def send_table(self, message, neigh_remote_physical_port, neigh_local_physical_host, index):
+    def send_message(self, message, neigh_remote_physical_port, neigh_local_physical_host, index):
         msg = pickle.dumps(message)
         self.send(msg, neigh_remote_physical_port, neigh_local_physical_host, index)
 
