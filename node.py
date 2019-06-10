@@ -38,6 +38,7 @@ class Node:
 
             self.destination[dest] = len(self.destination)
             if len(self.distance_table) > 0:
+                print("#####", len(self.distance_table[0]))
                 self.distance_table.append([[(float('inf'), -1, "")] * len(self.distance_table[0])])
                 self.last_updates.append([[0] * len(self.last_updates[0])])
 
@@ -64,9 +65,10 @@ class Node:
 
     def print_distance_table(self):
         for dest in self.destination:
-            for via in self.passing_node:
-                d_coor, v_coor = self.give_coordinates(dest, via)
-                print(dest, via, self.distance_table[d_coor][v_coor])
+            print(dest,)
+        for i in range(len(self.distance_table)):
+            for j in range(len(self.distance_table[i])):
+                print(self.distance_table[i][j], )
 
     def initialize_table(self):
         self.destination = {}
@@ -88,8 +90,11 @@ class Node:
         for neighbour in self.neighbours_info:
             for other in self.neighbours_info:
                 dest_coor, via_coor = self.give_coordinates(neighbour.local_virtual_IP, other.local_virtual_IP)
+                print(dest_coor, via_coor)
+                print(len(self.distance_table), len(self.distance_table[dest_coor]) )
                 self.distance_table[dest_coor][via_coor] = (0, self.physical_port, self.physical_host)
                 self.last_updates[dest_coor][via_coor] = -1
+        self.print_distance_table()
 
     def num_digits(self, number):
         count = 0
@@ -127,6 +132,7 @@ class Node:
 
             elif items[0] == "q":
                 print("Not Implemented.")
+                quit(0)
                 break
 
             else:
@@ -183,6 +189,7 @@ class Node:
                 updated_data = (min_distance, source_physical_port, source_physical_host)
                 self.distance_table[d_coor][v_coor] = updated_data
                 self.last_updates[d_coor][v_coor] = time.time()
+        self.print_distance_table()
 
     def receive_data(self):
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
