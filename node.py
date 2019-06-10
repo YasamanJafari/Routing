@@ -171,11 +171,15 @@ class Node:
         neigh_destination_map = body[1]
         d_coor, v_coor = self.give_coordinates(virtual_IP, virtual_IP)
         if not (self.distance_table[d_coor][v_coor] == 1):
-            self.distance_table[d_coor][v_coor] = 1
+            self.distance_table[d_coor][v_coor][0] = 1
         for destination in neigh_destination_map:
             dest_index = neigh_destination_map[destination]
             min_distance = neigh_dist_table[dest_index][0][0]
             for distance_info in neigh_dist_table[dest_index]:
+                print("*******")
+                print(min_distance)
+                print(distance_info)
+                print("^^^^^^^")
                 if min_distance > distance_info[0]:
                     min_distance = distance_info[0]
             d_coor, v_coor = self.give_coordinates(destination, virtual_IP)
@@ -183,7 +187,7 @@ class Node:
             min_distance = min_distance+1
             if self.distance_table[d_coor][v_coor] > min_distance:
                 updated_data = (min_distance, source_physical_port, source_physical_host)
-                self.distance_table[d_coor][v_coor] = updated_data
+                self.distance_table[d_coor][v_coor][0] = updated_data
                 self.last_updates[d_coor][v_coor] = time.time()
         self.print_distance_table()
 
