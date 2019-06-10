@@ -216,7 +216,10 @@ class Node:
                 physical_port = dist_instance[1]
                 physical_IP = dist_instance[2]
             i += 1
-        local_interface = self.search_for_local_interface(self.give_passing_node_virtual_by_index(virtual_index))
+        if not min_dist ==0:
+            local_interface = self.search_for_local_interface(self.give_passing_node_virtual_by_index(virtual_index))
+        else:
+            local_interface = dest
         return local_interface, min_dist, (physical_IP, physical_port)
 
     def show_interfaces(self):
@@ -235,8 +238,5 @@ class Node:
         for dest in self.destination:
             local_interface, min_dist, addr = self.find_hop(dest)
             if not min_dist == float('inf'):
-                if not min_dist == 0:
-                    print(str(min_dist) + " " * 7 + dest + " " * 5 + local_interface)
-                else:
-                    space_size = 8 - self.num_digits(min_dist)
-                    print("0" + " " * space_size + dest + " " * 5 + dest)
+                space_size = 8 - self.num_digits(min_dist)
+                print(str(min_dist) + " " * space_size + dest + " " * 5 + local_interface)
