@@ -100,7 +100,7 @@ class Node:
         if number == 0:
             return 1
         while number > 0:
-            number /= 10
+            number = int(number/10)
             count += 1
         return count
 
@@ -186,7 +186,6 @@ class Node:
                 updated_data = [min_distance, source_physical_port, source_physical_host]
                 self.distance_table[d_coor][v_coor][0] = updated_data
                 self.last_updates[d_coor][v_coor] = time.time()
-        self.print_distance_table()
 
     def search_for_local_interface(self, virtual):
         for neighbour in self.neighbours_info:
