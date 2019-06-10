@@ -38,18 +38,18 @@ class Node:
 
             self.destination[dest] = len(self.destination)
             if len(self.distance_table) > 0:
-                self.distance_table.append([[(float('inf'), -1, "")] * len(self.distance_table[0])])
-                self.last_updates.append([[0] * len(self.last_updates[0])])
+                self.distance_table.append([(float('inf'), -1, "")] * len(self.distance_table[0]))
+                self.last_updates.append([0] * len(self.last_updates[0]))
 
             else:
-                self.distance_table.append([[(float('inf'), -1, "")]])
-                self.last_updates.append([[0]])
+                self.distance_table.append([(float('inf'), -1, "")])
+                self.last_updates.append([0])
         via_coor = self.passing_node.get(via)
 
         if dest not in self.destination:
-            self.distance_table.append([[(float('inf'), -1, "")] * len(self.distance_table[0])])
+            self.distance_table.append([(float('inf'), -1, "")] * len(self.distance_table[0]))
             # self.last_updates.append(time.time())
-            self.last_updates.append([[0] * len(self.last_updates[0])])
+            self.last_updates.append([0] * len(self.last_updates[0]))
             self.destination[dest] = len(self.destination)
 
         dest_coor = self.destination.get(dest)
@@ -64,9 +64,10 @@ class Node:
 
     def print_distance_table(self):
         for dest in self.destination:
-            for via in self.passing_node:
-                d_coor, v_coor = self.give_coordinates(dest, via)
-                print(dest, via, self.distance_table[d_coor][v_coor])
+            print(dest,)
+        for i in range(len(self.distance_table)):
+            for j in range(len(self.distance_table[i])):
+                print(self.distance_table[i][j], )
 
     def initialize_table(self):
         self.destination = {}
@@ -88,12 +89,6 @@ class Node:
         for neighbour in self.neighbours_info:
             for other in self.neighbours_info:
                 dest_coor, via_coor = self.give_coordinates(neighbour.local_virtual_IP, other.local_virtual_IP)
-                print("***")
-                self.print_distance_table()
-                print("***")
-                print(dest_coor)
-                print(via_coor)
-                print("###")
                 self.distance_table[dest_coor][via_coor] = (0, self.physical_port, self.physical_host)
                 self.last_updates[dest_coor][via_coor] = -1
 
@@ -133,6 +128,7 @@ class Node:
 
             elif items[0] == "q":
                 print("Not Implemented.")
+                quit(0)
                 break
 
             else:
@@ -166,7 +162,6 @@ class Node:
         print(message[1])
 
     def update_distance_table(self, message):
-        print("HELLLLO")
         header = message[0]
         body = message[1]
         source_physical_host = header[0]
@@ -184,18 +179,13 @@ class Node:
                 if min_distance > distance_info[0]:
                     min_distance = distance_info[0]
             d_coor, v_coor = self.give_coordinates(destination, virtual_IP)
-            print("***")
-            self.print_distance_table()
-            print("***")
-            print(d_coor)
-            print(v_coor)
-            print("###")
             self.last_updates[d_coor][v_coor] = time.time()
             min_distance = min_distance+1
             if self.distance_table[d_coor][v_coor] > min_distance:
                 updated_data = (min_distance, source_physical_port, source_physical_host)
                 self.distance_table[d_coor][v_coor] = updated_data
                 self.last_updates[d_coor][v_coor] = time.time()
+        self.print_distance_table()
 
     def receive_data(self):
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
