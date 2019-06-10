@@ -93,20 +93,12 @@ class Node:
 
     def num_digits(self, number):
         count = 0
+        if number == 0:
+            return 1
         while number > 0:
             number /= 10
             count += 1
         return count
-
-    def show_interfaces(self):
-        id_ = 0
-
-        print("id    rem            loc")
-
-        for neighbor in self.neighbours_info:
-            space_size = 6 - self.num_digits(id_)
-            print(id_, " " * space_size, neighbor.remote_virtual_IP, " " * 5, neighbor.local_virtual_IP)
-            id_ += 1
 
     def get_header(self, destination_port, local_virtual, protocol):
         return [self.physical_host, self.physical_port, destination_port, local_virtual, protocol]
@@ -115,11 +107,11 @@ class Node:
         while True:
             text = input("> ")
             items = (text.split(" "))
-            if items[0] == "interfaces" or text == "li":
+            if items[0] == "interfaces" or items[0] == "li":
                 self.show_interfaces()
 
-            elif items[0] == "routes" or text == "lr":
-                print("Not Implemented.")
+            elif items[0] == "routes" or items[0] == "lr":
+                self.show_routes()
 
             elif items[0] == "down":
                 print("Not Implemented.")
@@ -216,24 +208,39 @@ class Node:
 
     def find_hop(self, dest):
         dest_index = self.destination[dest]
-        min_dist = self.distance_table[dest_index][0]
+        min_dist = self.distance_table[dest_index][0][0]
+        physical_port = self.distance_table[dest_index][0][1]
+        physical_IP = self.distance_table[dest_index][0][2]
         virtual_index = 0
-        for dist_instance, i in enumerate(self.distance_table[dest_index]):
-            if min_dist[0] > dist_instance[0]:
-                min_dist = dist_instance
+        i = 0
+        for dist_instance in self.distance_table[dest_index]:
+            if min_dist > dist_instance[0]:
+                min_dist = dist_instance[0]
                 virtual_index = i
                 physical_port = dist_instance[1]
                 physical_IP = dist_instance[2]
+            i += 1
         local_interface = self.search_for_local_interface(self.give_passing_node_virtual_by_index(virtual_index))
         return local_interface, min_dist, (physical_IP, physical_port)
+
+    def show_interfaces(self):
+        id_ = 0
+
+        print("id    rem            loc")
+
+        for neighbor in self.neighbours_info:
+            space_size = 6 - self.num_digits(id_)
+            print(str(id_) + " " * space_size + neighbor.remote_virtual_IP + " " * 5 + neighbor.local_virtual_IP)
+            id_ += 1
 
     def show_routes(self):
         print("cost    dst             loc")
 
         for dest in self.destination:
             local_interface, min_dist, addr = self.find_hop(dest)
-            if not min_dist[0] == float('inf'):
-                if not min_dist[0] == 0:
-                    print(min_dist[0], " " * 8, dest, " " * 6, local_interface)
+            if not min_dist == float('inf'):
+                if not min_dist == 0:
+                    print(str(min_dist) + " " * 7 + dest + " " * 5 + local_interface)
                 else:
-                    print(0, " " * 8, dest, " " * 6, dest)
+                    space_size = 8 - self.num_digits(min_dist)
+                    print("0" + " " * space_size + dest + " " * 5 + dest)
