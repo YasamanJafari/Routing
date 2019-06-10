@@ -36,15 +36,18 @@ class Link:
     def receive(self):
         return self.sock.recvfrom(constant.MTU)
 
+    def send(self, msg, neigh_remote_physical_port, neigh_local_physical_host, index):
+        self.send_sockets[index].sendto(msg, (neigh_local_physical_host, neigh_remote_physical_port))
+
     def receive_data(self):
         while True:
             data, address = self.receive()
             msg = pickle.loads(data)
             self.run_handler(msg)
 
-    def send_table(self, message, neigh_remote_physical_port, neigh_local_virtual_host, index):
+    def send_table(self, message, neigh_remote_physical_port, neigh_local_physical_host, index):
         msg = pickle.dumps(message)
-        self.send_sockets[index].sendto(msg, (neigh_local_virtual_host, neigh_remote_physical_port))
+        self.send(msg, neigh_remote_physical_port, neigh_local_physical_host, index)
 
 
 def read_link_data(file_name):

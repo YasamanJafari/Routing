@@ -159,7 +159,7 @@ class Node:
             for neighbour in self.neighbours_info:
                 header = self.get_header(neighbour.remote_physical_port, neighbour.local_virtual_IP, 200)
                 self.link.send_table([header, table_info],
-                                     neighbour.remote_physical_port, neighbour.local_virtual_IP, i)
+                                     neighbour.remote_physical_port, neighbour.remote_physical_IP, i)
                 i += 1
             time.sleep(1)
 
@@ -177,7 +177,6 @@ class Node:
         d_coor, v_coor = self.give_coordinates(virtual_IP, virtual_IP)
         if not (self.distance_table[d_coor][v_coor][0] == 1):
             self.distance_table[d_coor][v_coor][0] = 1
-            self.print_distance_table()
         for destination in neigh_destination_map:
             dest_index = neigh_destination_map[destination]
             min_distance = neigh_dist_table[dest_index][0][0]
