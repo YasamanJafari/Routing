@@ -1,5 +1,4 @@
 import socket
-import constant
 import pickle
 import time
 from link import Link
@@ -16,7 +15,7 @@ class Node:
         self.last_updates = []
         self.initialize_table()
         self.registered_handlers = {}
-        self.link = Link(self.print_message, self.update_distance_table)
+        self.link = Link(self.run_handler, self.physical_host, self.physical_port)
 
     def register_handlers(self, protocol_num, handler):
         if protocol_num in self.registered_handlers:
@@ -154,12 +153,10 @@ class Node:
 
     def send_table(self):
         while True:
+            table_info = [self.distance_table, self.destination, self.passing_node]
             for neighbour in self.neighbours_info:
-                sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-                table_info = [self.distance_table, self.destination, self.passing_node]
                 header = self.get_header(neighbour.remote_physical_port, neighbour.local_virtual_IP, 200)
-                msg = pickle.dumps([header, table_info])
-                sock.sendto(msg, (neighbour.remote_physical_IP, neighbour.remote_physical_port))
+                self.link.send_table([header, table_info], neighbour.remote_physical_port, neighbour.local_virtual_IP)
             time.sleep(1)
 
     def print_message(self, message):
@@ -187,7 +184,7 @@ class Node:
             min_distance += 1
             if self.distance_table[d_coor][v_coor][0] > min_distance:
                 updated_data = [min_distance, source_physical_port, source_physical_host]
-                self.distance_table[d_coor][v_coor] = updated_data
+                self.distance_table[d_coor][v_coor][0] = updated_data
                 self.last_updates[d_coor][v_coor] = time.time()
         self.print_distance_table()
 

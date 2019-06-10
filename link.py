@@ -2,6 +2,7 @@ import socket
 import pickle
 import constant
 
+
 class LnxInfo:
     def __init__(self, local_physical_host, local_physical_port):
         self.local_physical_IP = local_physical_host
@@ -21,9 +22,8 @@ class LnxBody:
 
 
 class Link:
-    def __init__(self, print_message, update_table, physical_host, physical_port):
-        self.print_message = print_message
-        self.update_table = update_table
+    def __init__(self, run_handler, physical_host, physical_port):
+        self.run_handler = run_handler
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.sock.bind((physical_host, physical_port))
 
@@ -35,6 +35,11 @@ class Link:
             data, address = self.receive()
             msg = pickle.loads(data)
             self.run_handler(msg)
+
+    def send_table(self, message, neigh_remote_physical_port, neigh_local_virtual_host):
+        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        msg = pickle.dumps(message)
+        sock.sendto(msg, (neigh_local_virtual_host, neigh_remote_physical_port))
 
 
 def read_link_data(file_name):
