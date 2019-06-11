@@ -167,6 +167,11 @@ class Node:
     def up_interface(self, interface_id):
         if interface_id in self.passing_node.values():
             print("This interface is already up.")
+        else:
+            interface_to_up = self.neighbours_info[interface_id]
+            virtual_IP = interface_to_up.remote_virtual_IP
+            d_coor, v_coor = self.give_coordinates(virtual_IP, virtual_IP)
+            self.distance_table[d_coor][v_coor][0] = 1
 
     def update_distance_table(self, message):
         header = message[0]
