@@ -139,6 +139,12 @@ class Node:
             i += 1
 
     def send_message(self, dest, protocol_number, message):
+        if dest not in self.destination:
+            print("This destination is not reachable.")
+            return
+        if dest not in self.destination:
+            print("Destination is not reachable.")
+            return;
         local_interface, min_dist = self.find_hop(dest)
         port, host, i = self.find_addr(local_interface)
         header = self.get_header(port, local_interface, protocol_number)
@@ -164,7 +170,6 @@ class Node:
     def up_interface(self, interface_id):
         if interface_id in self.passing_node.values():
             print("This interface is already up.")
-
 
     def update_distance_table(self, message):
         header = message[0]
