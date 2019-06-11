@@ -164,19 +164,19 @@ class Node:
         body = message[1]
         source_physical_host = header[0]
         source_physical_port = header[1]
-        virtual_IP = header[3]
+        virtual_ip = header[3]
         neigh_dist_table = body[0]
         neigh_destination_map = body[1]
-        d_coor, v_coor = self.give_coordinates(virtual_IP, virtual_IP)
+        d_coor, v_coor = self.give_coordinates(virtual_ip, virtual_ip)
         if not (self.distance_table[d_coor][v_coor][0] == 1):
             self.distance_table[d_coor][v_coor][0] = 1
         for destination in neigh_destination_map:
             dest_index = neigh_destination_map[destination]
-            min_distance = neigh_dist_table[dest_index][0][0]
+            min_distance = float('inf')
             for distance_info in neigh_dist_table[dest_index]:
-                if min_distance > distance_info[0]:
+                if min_distance > distance_info[0] and not(distance_info[1] == self.physical_port and distance_info[2] == self.physical_host):
                     min_distance = distance_info[0]
-            d_coor, v_coor = self.give_coordinates(destination, virtual_IP)
+            d_coor, v_coor = self.give_coordinates(destination, virtual_ip)
             self.last_updates[d_coor][v_coor] = time.time()
             min_distance += 1
             if self.distance_table[d_coor][v_coor][0] >= min_distance:
@@ -184,16 +184,35 @@ class Node:
                 self.distance_table[d_coor][v_coor] = updated_data
                 self.last_updates[d_coor][v_coor] = time.time()
 
-    def search_for_local_interface(self, virtual):
-        for neighbour in self.neighbours_info:
-            if neighbour.remote_virtual_IP == virtual:
-                return neighbour.local_virtual_IP
-            return virtual
+        neigh_index = self.passing_node[virtual_ip]
+        for index in range(len(self.distance_table)):
+            if not self.give_passing_node_virtual_by_index(index) in neigh_destination_map:
+                self.distance_table[index][neigh_index][0] = float('inf')
+                self.delete_inf_row_col_distance_table()
+            # distance_info = self.distance_table[index][neigh_index]
+
+            # else:
+            #     neigh_dest_index = neigh_destination_map[self.give_passing_node_virtual_by_index(index)]
+            #     min_entry = neigh_dist_table[neigh_dest_index][0]
+            #     for d_info in neigh_dist_table[neigh_dest_index]:
+            #         if min_entry[0] > d_info[0]:
+            #             min_entry = d_info
 
     def give_passing_node_virtual_by_index(self, index):
         for virtual, i in self.passing_node.items():
             if index == i:
                 return virtual
+
+    def give_dest_node_virtual_by_index(self, index):
+        for virtual, i in self.destination.items():
+            if index == i:
+                return virtual
+            
+    def search_for_local_interface(self, virtual):
+        for neighbour in self.neighbours_info:
+            if neighbour.remote_virtual_IP == virtual:
+                return neighbour.local_virtual_IP
+            return virtual
 
     def find_hop(self, dest):
         dest_index = self.destination[dest]
