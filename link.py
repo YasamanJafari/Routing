@@ -19,6 +19,7 @@ class LnxBody:
         self.remote_physical_port = remote_physical_port
         self.local_virtual_IP = local_virtual
         self.remote_virtual_IP = remote_virtual
+        self.status = constant.UP
 
 
 class Link:

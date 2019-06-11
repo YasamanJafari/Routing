@@ -1,5 +1,4 @@
-import socket
-import pickle
+import constant
 import time
 from link import Link
 
@@ -50,7 +49,6 @@ class Node:
 
         if dest not in self.destination:
             self.distance_table.append([[float('inf'), -1, ""]] * len(self.distance_table[0]))
-            # self.last_updates.append(time.time())
             self.last_updates.append([0] * len(self.last_updates[0]))
             self.destination[dest] = len(self.destination)
 
@@ -58,11 +56,15 @@ class Node:
 
         return dest_coor, via_coor
 
-    # def check_for_unusable(self):
-    #     for i in range(len(self.last_updates)):
-    #         updated = False
-    #         for j in range(len(self.last_updates[i])):
-    #
+    def check_for_out_of_date(self):
+        for i in range(len(self.last_updates)):
+            for j in range(len(self.last_updates[i])):
+                if self.last_updates[i][j] == -1:
+                    continue
+                if time.time() - self.last_updates[i][j] > 5:
+                    d_coor, v_coor = self.give_coordinates\
+                        (self.give_destination_node_virtual_by_index(i), self.give_passing_node_virtual_by_index(j))
+                    self.distance_table[d_coor][v_coor] = [float('inf'), -1, ""]
 
     def print_distance_table(self):
         for dest in self.destination:
@@ -109,7 +111,7 @@ class Node:
                 print("Not Implemented.")
 
             elif items[0] == "up":
-                print("Not Implemented.")
+                self.up_interface(items[1])
 
             elif items[0] == "send":
                 if len(items) != 4:
@@ -140,6 +142,9 @@ class Node:
             i += 1
 
     def send_message(self, dest, protocol_number, message):
+        if dest not in self.destination:
+            print("Destination is not reachable.")
+            return
         local_interface, min_dist = self.find_hop(dest)
         port, host, i = self.find_addr(local_interface)
         header = self.get_header(port, local_interface, protocol_number)
@@ -150,6 +155,9 @@ class Node:
             table_info = [self.distance_table, self.destination, self.passing_node]
             i = 0
             for neighbour in self.neighbours_info:
+                if neighbour.status == constant.DOWN:
+                    i += 1
+                    continue
                 header = self.get_header(neighbour.remote_physical_port, neighbour.local_virtual_IP, 200)
                 self.link.send_message([header, table_info],
                                      neighbour.remote_physical_port, neighbour.remote_physical_IP, i)
@@ -158,6 +166,16 @@ class Node:
 
     def print_message(self, message):
         print(message[1])
+
+    def up_interface(self, interface_id):
+        if interface_id in self.passing_node.values():
+            print("This interface is already up.")
+        else:
+            interface_to_up = self.neighbours_info[interface_id]
+            virtual_IP = interface_to_up.remote_virtual_IP
+            d_coor, v_coor = self.give_coordinates(virtual_IP, virtual_IP)
+            self.distance_table[d_coor][v_coor][0] = 1
+            self.last_updates[d_coor][v_coor] = time.time()
 
     def update_distance_table(self, message):
         header = message[0]
@@ -170,6 +188,7 @@ class Node:
         d_coor, v_coor = self.give_coordinates(virtual_ip, virtual_ip)
         if not (self.distance_table[d_coor][v_coor][0] == 1):
             self.distance_table[d_coor][v_coor][0] = 1
+            self.last_updates[d_coor][v_coor] = time.time()
         for destination in neigh_destination_map:
             dest_index = neigh_destination_map[destination]
             min_distance = float('inf')
@@ -203,7 +222,7 @@ class Node:
             if index == i:
                 return virtual
 
-    def give_dest_node_virtual_by_index(self, index):
+    def give_destination_node_virtual_by_index(self, index):
         for virtual, i in self.destination.items():
             if index == i:
                 return virtual
@@ -236,7 +255,7 @@ class Node:
         dests.sort()
         while len(dests) > 0:
             del self.distance_table[dests[0]]
-            del self.destination[self.give_dest_node_virtual_by_index(dests[0])]
+            del self.destination[self.give_destination_node_virtual_by_index(dests[0])]
             self.update_dest_map_after(dests[0])
             del dests[0]
             for i in range(len(dests)):
@@ -282,21 +301,23 @@ class Node:
                 min_dist = dist_instance[0]
                 virtual_index = i
             i += 1
-        if not min_dist ==0:
+        if not min_dist == 0:
             local_interface = self.search_for_local_interface(self.give_passing_node_virtual_by_index(virtual_index))
         else:
             local_interface = dest
         return local_interface, min_dist
 
     def show_interfaces(self):
-        id_ = 0
-
+        i = 0
         print("id    rem            loc")
 
         for neighbor in self.neighbours_info:
-            space_size = 6 - self.num_digits(id_)
-            print(str(id_) + " " * space_size + neighbor.remote_virtual_IP + " " * 5 + neighbor.local_virtual_IP)
-            id_ += 1
+            if neighbor.status == constant.DOWN:
+                i += 1
+                continue
+            space_size = 6 - self.num_digits(i)
+            print(str(i) + " " * space_size + neighbor.remote_virtual_IP + " " * 5 + neighbor.local_virtual_IP)
+            i += 1
 
     def show_routes(self):
         print("cost    dst             loc")
