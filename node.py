@@ -207,7 +207,65 @@ class Node:
         for virtual, i in self.destination.items():
             if index == i:
                 return virtual
-            
+
+    def row_is_infinity(self, i):
+        infinity = True
+        for dist_item in self.distance_table[i]:
+            if not dist_item[0] == float('inf'):
+                infinity = False
+        return infinity
+
+    def col_is_infinity(self, i):
+        infinity = True
+        for dist_item in self.distance_table[:][i]:
+            if not dist_item[0] == float('inf'):
+                infinity = False
+        return infinity
+
+    def update_dest_map_after(self, i):
+        for virtual, index in self.destination.items():
+            if index > i:
+                self.destination[virtual] = index - 1
+
+    def update_passing_map_after(self, i):
+        for virtual, index in self.passing_node.items():
+            if index > i:
+                self.destination[virtual] = index - 1
+
+    def delete_dests(self, dests):
+        dests.sort()
+        while len(dests) > 0:
+            del self.distance_table[dests[0]]
+            del self.destination[self.give_dest_node_virtual_by_index(dests[0])]
+            self.update_dest_map_after(dests[0])
+            del dests[0]
+            for i in range(len(dests)):
+                dests[i] -= 1
+
+    def delete_passings(self, passings):
+        passings.sort()
+        while len(passings) > 0:
+            for row in self.distance_table:
+                del row[passings[0]]
+            del self.passing_node[self.give_passing_node_virtual_by_index(passings[0])]
+            self.update_passing_map_after()
+            del passings[0]
+            for i in range(len(passings)):
+                passings[i] -= 1
+
+    def delete_inf_row_col_distance_table(self):
+        inf_row = []
+        inf_col = []
+
+        for i in range(len(self.distance_table)):
+            if self.row_is_infinity(i):
+                inf_row.append(i)
+        for j in range(len(self.distance_table[0])):
+            if self.col_is_infinity(j):
+                inf_col.append(j)
+        self.delete_dests(inf_row)
+        self.delete_passings(inf_col)
+
     def search_for_local_interface(self, virtual):
         for neighbour in self.neighbours_info:
             if neighbour.remote_virtual_IP == virtual:
