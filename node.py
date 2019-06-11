@@ -23,9 +23,22 @@ class Node:
         else:
             self.registered_handlers[protocol_num] = handler
 
+    def check_if_interface_is_mine(self, virtual):
+        for neighbour in self.neighbours_info:
+            if neighbour.local_virtual_IP == virtual:
+                return True, neighbour
+        return False, ""
+
     def run_handler(self, packet):
         if packet[0][4] in self.registered_handlers:
-            self.registered_handlers.get(packet[0][4])(packet)
+            exists, neighbour = self.check_if_interface_is_mine(packet[0][5])
+            if exists and neighbour.status == constant.DOWN:
+                print("The given interface is currently down")
+                return
+            elif exists and neighbour.status == constant.UP:
+                self.registered_handlers.get(packet[0][4])(packet)
+            if not exists:
+                self.send_message(packet[0][5], packet[0][4], packet)
         else:
             print("This protocol number is not registered.")
 
@@ -94,8 +107,8 @@ class Node:
             count += 1
         return count
 
-    def get_header(self, destination_port, local_virtual, protocol):
-        return [self.physical_host, self.physical_port, destination_port, local_virtual, protocol]
+    def get_header(self, destination_port, local_virtual, protocol, dest):
+        return [self.physical_host, self.physical_port, destination_port, local_virtual, protocol, dest]
 
     def read_commands(self):
         while True:
@@ -137,9 +150,9 @@ class Node:
 
     def find_addr(self, local_interface):
         i = 0
-        for neigbour in self.neighbours_info:
-            if neigbour.local_virtual_IP == local_interface:
-                return neigbour.remote_physical_port, neigbour.remote_physical_IP, i
+        for neighbour in self.neighbours_info:
+            if neighbour.local_virtual_IP == local_interface:
+                return neighbour.remote_physical_port, neighbour.remote_physical_IP, i
             i += 1
 
     def send_message(self, dest, protocol_number, message):
@@ -148,7 +161,7 @@ class Node:
             return
         local_interface, min_dist = self.find_hop(dest)
         port, host, i = self.find_addr(local_interface)
-        header = self.get_header(port, local_interface, protocol_number)
+        header = self.get_header(port, local_interface, protocol_number, dest)
         self.link.send_message([header, message], port, host, i)
 
     def send_table(self):
@@ -159,7 +172,7 @@ class Node:
                 if neighbour.status == constant.DOWN:
                     i += 1
                     continue
-                header = self.get_header(neighbour.remote_physical_port, neighbour.local_virtual_IP, 200)
+                header = self.get_header(neighbour.remote_physical_port, neighbour.local_virtual_IP, 200, neighbour.remote_virtual_IP)
                 self.link.send_message([header, table_info],
                                      neighbour.remote_physical_port, neighbour.remote_physical_IP, i)
                 i += 1
@@ -168,8 +181,9 @@ class Node:
     def print_message(self, message):
         print(message[1])
 
+
     def up_interface(self, interface_id):
-        if interface_id in self.passing_node.values():
+        if interface_id in self.neighbours_info and self.neighbours_info[interface_id] == constant.UP:
             print("This interface is already up.")
         else:
             interface_to_up = self.neighbours_info[interface_id]
@@ -177,6 +191,7 @@ class Node:
             d_coor, v_coor = self.give_coordinates(virtual_IP, virtual_IP)
             self.distance_table[d_coor][v_coor][0] = 1
             self.last_updates[d_coor][v_coor] = time.time()
+            self.neighbours_info[interface_id].status = constant.UP
 
     def down_interface(self, interface_id):
         if interface_id not in self.passing_node.values():
@@ -308,6 +323,11 @@ class Node:
                 min_dist = dist_instance[0]
                 virtual_index = i
             i += 1
+        print("MIN: ***")
+        print(min_dist)
+        for node in self.passing_node:
+            print(node)
+        print("^^^")
         if not min_dist == 0:
             local_interface = self.search_for_local_interface(self.give_passing_node_virtual_by_index(virtual_index))
         else:
