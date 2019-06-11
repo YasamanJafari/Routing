@@ -150,6 +150,7 @@ class Node:
             i = 0
             for neighbour in self.neighbours_info:
                 if neighbour.status == constant.DOWN:
+                    i += 1
                     continue
                 header = self.get_header(neighbour.remote_physical_port, neighbour.local_virtual_IP, 200)
                 self.link.send_message([header, table_info],
@@ -223,6 +224,7 @@ class Node:
 
         for neighbor in self.neighbours_info:
             if neighbor.status == constant.DOWN:
+                i += 1
                 continue
             space_size = 6 - self.num_digits(i)
             print(str(i) + " " * space_size + neighbor.remote_virtual_IP + " " * 5 + neighbor.local_virtual_IP)
