@@ -1,5 +1,4 @@
-import socket
-import pickle
+import constant
 import time
 from link import Link
 
@@ -109,7 +108,7 @@ class Node:
                 print("Not Implemented.")
 
             elif items[0] == "up":
-                print("Not Implemented.")
+                self.up_interface(items[1])
 
             elif items[0] == "send":
                 if len(items) != 4:
@@ -150,6 +149,8 @@ class Node:
             table_info = [self.distance_table, self.destination, self.passing_node]
             i = 0
             for neighbour in self.neighbours_info:
+                if neighbour.status == constant.DOWN:
+                    continue
                 header = self.get_header(neighbour.remote_physical_port, neighbour.local_virtual_IP, 200)
                 self.link.send_message([header, table_info],
                                      neighbour.remote_physical_port, neighbour.remote_physical_IP, i)
@@ -158,6 +159,11 @@ class Node:
 
     def print_message(self, message):
         print(message[1])
+
+    def up_interface(self, interface_id):
+        if interface_id in self.passing_node.values():
+            print("This interface is already up.")
+
 
     def update_distance_table(self, message):
         header = message[0]
@@ -205,21 +211,22 @@ class Node:
                 min_dist = dist_instance[0]
                 virtual_index = i
             i += 1
-        if not min_dist ==0:
+        if not min_dist == 0:
             local_interface = self.search_for_local_interface(self.give_passing_node_virtual_by_index(virtual_index))
         else:
             local_interface = dest
         return local_interface, min_dist
 
     def show_interfaces(self):
-        id_ = 0
-
+        i = 0
         print("id    rem            loc")
 
         for neighbor in self.neighbours_info:
-            space_size = 6 - self.num_digits(id_)
-            print(str(id_) + " " * space_size + neighbor.remote_virtual_IP + " " * 5 + neighbor.local_virtual_IP)
-            id_ += 1
+            if neighbor.status == constant.DOWN:
+                continue
+            space_size = 6 - self.num_digits(i)
+            print(str(i) + " " * space_size + neighbor.remote_virtual_IP + " " * 5 + neighbor.local_virtual_IP)
+            i += 1
 
     def show_routes(self):
         print("cost    dst             loc")
