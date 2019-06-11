@@ -49,7 +49,6 @@ class Node:
 
         if dest not in self.destination:
             self.distance_table.append([[float('inf'), -1, ""]] * len(self.distance_table[0]))
-            # self.last_updates.append(time.time())
             self.last_updates.append([0] * len(self.last_updates[0]))
             self.destination[dest] = len(self.destination)
 
@@ -57,11 +56,16 @@ class Node:
 
         return dest_coor, via_coor
 
-    # def check_for_unusable(self):
-    #     for i in range(len(self.last_updates)):
-    #         updated = False
-    #         for j in range(len(self.last_updates[i])):
-    #
+    def check_for_unusable(self):
+        for i in range(len(self.last_updates)):
+            for j in range(len(self.last_updates[i])):
+                if self.last_updates[i][j] == -1:
+                    continue
+                if time.time() - self.last_updates[i][j] > 5:
+                    d_coor, v_coor = self.give_coordinates(i, j)
+                    self.distance_table[d_coor, v_coor] = [float('inf'), -1, ""]
+
+
 
     def print_distance_table(self):
         for dest in self.destination:
@@ -172,6 +176,7 @@ class Node:
             virtual_IP = interface_to_up.remote_virtual_IP
             d_coor, v_coor = self.give_coordinates(virtual_IP, virtual_IP)
             self.distance_table[d_coor][v_coor][0] = 1
+            self.last_updates[d_coor][v_coor] = time.time()
 
     def update_distance_table(self, message):
         header = message[0]
@@ -184,6 +189,7 @@ class Node:
         d_coor, v_coor = self.give_coordinates(virtual_IP, virtual_IP)
         if not (self.distance_table[d_coor][v_coor][0] == 1):
             self.distance_table[d_coor][v_coor][0] = 1
+            self.last_updates[d_coor][v_coor] = time.time()
         for destination in neigh_destination_map:
             dest_index = neigh_destination_map[destination]
             min_distance = neigh_dist_table[dest_index][0][0]
