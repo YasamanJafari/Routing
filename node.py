@@ -56,7 +56,7 @@ class Node:
 
         return dest_coor, via_coor
 
-    def check_for_unusable(self):
+    def check_for_out_of_date(self):
         for i in range(len(self.last_updates)):
             for j in range(len(self.last_updates[i])):
                 if self.last_updates[i][j] == -1:
