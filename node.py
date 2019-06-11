@@ -140,11 +140,8 @@ class Node:
 
     def send_message(self, dest, protocol_number, message):
         if dest not in self.destination:
-            print("This destination is not reachable.")
-            return
-        if dest not in self.destination:
             print("Destination is not reachable.")
-            return;
+            return
         local_interface, min_dist = self.find_hop(dest)
         port, host, i = self.find_addr(local_interface)
         header = self.get_header(port, local_interface, protocol_number)
