@@ -109,6 +109,7 @@ class Node:
 
             elif items[0] == "down":
                 print("Not Implemented.")
+                self.down_interface(items[1])
 
             elif items[0] == "up":
                 self.up_interface(items[1])
@@ -176,6 +177,10 @@ class Node:
             d_coor, v_coor = self.give_coordinates(virtual_IP, virtual_IP)
             self.distance_table[d_coor][v_coor][0] = 1
             self.last_updates[d_coor][v_coor] = time.time()
+
+    def down_interface(self, interface_id):
+        if interface_id not in self.passing_node.values():
+            print("This interface is already down.")
 
     def update_distance_table(self, message):
         header = message[0]
