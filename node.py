@@ -62,7 +62,8 @@ class Node:
                 if self.last_updates[i][j] == -1:
                     continue
                 if time.time() - self.last_updates[i][j] > 5:
-                    d_coor, v_coor = self.give_coordinates(i, j)
+                    d_coor, v_coor = self.give_coordinates\
+                        (self.give_destination_node_virtual_by_index(i), self.give_passing_node_virtual_by_index(j))
                     self.distance_table[d_coor][v_coor] = [float('inf'), -1, ""]
 
     def print_distance_table(self):
@@ -210,6 +211,11 @@ class Node:
 
     def give_passing_node_virtual_by_index(self, index):
         for virtual, i in self.passing_node.items():
+            if index == i:
+                return virtual
+
+    def give_destination_node_virtual_by_index(self, index):
+        for virtual, i in self.destination.items():
             if index == i:
                 return virtual
 
