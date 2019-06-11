@@ -63,9 +63,7 @@ class Node:
                     continue
                 if time.time() - self.last_updates[i][j] > 5:
                     d_coor, v_coor = self.give_coordinates(i, j)
-                    self.distance_table[d_coor, v_coor] = [float('inf'), -1, ""]
-
-
+                    self.distance_table[d_coor][v_coor] = [float('inf'), -1, ""]
 
     def print_distance_table(self):
         for dest in self.destination:
@@ -250,4 +248,6 @@ class Node:
             local_interface, min_dist = self.find_hop(dest)
             if not min_dist == float('inf'):
                 space_size = 8 - self.num_digits(min_dist)
+                print("***")
+                print(dest, local_interface)
                 print(str(min_dist) + " " * space_size + dest + " " * 5 + local_interface)
