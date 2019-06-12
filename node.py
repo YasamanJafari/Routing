@@ -213,7 +213,7 @@ class Node:
             self.delete_dests([self.destination[rem_virtual_IP], self.destination[loc_virtual_IP]])
             self.delete_passings([self.passing_node[rem_virtual_IP], self.passing_node[loc_virtual_IP]])
 
-            self.neighbours_info[interface_id].status = constant.UP
+            self.neighbours_info[interface_id].status = constant.DOWN
 
     def update_distance_table(self, message):
         header = message[0]
@@ -327,7 +327,6 @@ class Node:
         for neighbour in self.neighbours_info:
             if neighbour.remote_virtual_IP == virtual:
                 return neighbour.local_virtual_IP
-            return virtual
 
     def find_hop(self, dest):
         dest_index = self.destination[dest]
@@ -338,8 +337,7 @@ class Node:
             if min_dist > dist_instance[0]:
                 min_dist = dist_instance[0]
                 virtual_index = i
-
-        if not min_dist == 0:
+        if not (min_dist == 0):
             local_interface = self.search_for_local_interface(self.give_passing_node_virtual_by_index(virtual_index))
         else:
             local_interface = dest
