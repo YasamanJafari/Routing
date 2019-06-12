@@ -217,15 +217,10 @@ class Node:
         neigh_dist_table = body[0]
         neigh_destination_map = body[1]
 
-        self.print_distance_table()
 
         d_coor, v_coor = self.give_coordinates(virtual_ip, virtual_ip)
         if not (self.distance_table[d_coor][v_coor][0] == 1):
-            print("***************", d_coor, v_coor, 1)
-            self.print_distance_table()
-            print("{{{{{{{{{{{{{{{{{")
             self.distance_table[d_coor][v_coor] = [1, source_physical_port, source_physical_host]
-            self.print_distance_table()
 
             self.last_updates[d_coor][v_coor] = time.time()
         for destination in neigh_destination_map:
@@ -241,8 +236,6 @@ class Node:
                 if min_distance > 64:
                     min_distance = float('inf')
                 updated_data = [min_distance, source_physical_port, source_physical_host]
-                print("!!!!!!!!!!!!!!!!", d_coor, v_coor, min_distance)
-                self.print_distance_table()
                 self.distance_table[d_coor][v_coor] = updated_data
                 self.last_updates[d_coor][v_coor] = time.time()
 
@@ -253,7 +246,6 @@ class Node:
                     self.distance_table[index][neigh_index][0] = float('inf')
                     self.last_updates[index][neigh_index] = time.time()
 
-        self.print_distance_table()
 
         self.delete_inf_row_col_distance_table()
 
@@ -348,8 +340,6 @@ class Node:
             local_interface = dest
         # return local_interface, min_dist
 
-        self.print_distance_table()
-        print("%%%%%%%", virtual_index)
         return local_interface, self.distance_table[dest_index][virtual_index], virtual_index
 
     # def find_hop(self, dest):
