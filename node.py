@@ -211,8 +211,15 @@ class Node:
             rem_virtual_IP = interface_to_down.remote_virtual_IP
             loc_virtual_IP = interface_to_down.local_virtual_IP
 
-            self.delete_dests([self.destination[rem_virtual_IP], self.destination[loc_virtual_IP]])
-            self.delete_passings([self.passing_node[rem_virtual_IP], self.passing_node[loc_virtual_IP]])
+            should_del_dests = [self.destination[loc_virtual_IP]]
+            should_del_passings = [self.passing_node[loc_virtual_IP]]
+            if rem_virtual_IP in self.destination:
+                should_del_dests.append(self.destination[rem_virtual_IP])
+            if rem_virtual_IP in self.passing_node:
+                should_del_passings.append(self.passing_node[rem_virtual_IP])
+
+            self.delete_dests(should_del_dests)
+            self.delete_passings(should_del_passings)
 
             self.neighbours_info[interface_id].status = constant.DOWN
 
