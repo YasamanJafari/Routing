@@ -28,6 +28,12 @@ class Link:
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.sock.bind((physical_host, physical_port))
         self.send_sockets = []
+        self.message_contents = {}
+        self.message_id = 0
+
+    def break_to_chunks(self, message):
+        parts = [message[i:i+constant.CHUNK_SIZE] for i in range(0, len(message), constant.CHUNK_SIZE)]
+        return parts
 
     def create_neighbour_sockets(self, neighbours_count):
         for i in range(0, neighbours_count):
@@ -40,15 +46,41 @@ class Link:
     def send(self, msg, neigh_remote_physical_port, neigh_local_physical_host, index):
         self.send_sockets[index].sendto(msg, (neigh_local_physical_host, neigh_remote_physical_port))
 
+    def is_complete(self, msg_id, size):
+        contents = self.message_contents[msg_id]
+        count = 0
+        for item in contents:
+            if item != "":
+                count += 1
+        return count == size
+
+    def get_complete_msg(self, msg_id):
+        contents = self.message_contents[msg_id]
+        msg = b""
+        for item in contents:
+            msg += item
+        message = pickle.loads(msg)
+        del self.message_contents[msg_id]
+        return message
+
     def receive_data(self):
         while True:
             data, address = self.receive()
             msg = pickle.loads(data)
-            self.run_handler(msg)
+            if msg[0] in self.message_contents:
+                self.message_contents[msg[0]][msg[1]] = msg[3]
+            else:
+                self.message_contents[msg[0]] = [""] * msg[2]
+                self.message_contents[msg[0]][msg[1]] = msg[3]
+            if self.is_complete(msg[0], msg[2]):
+                self.run_handler(self.get_complete_msg(msg[0]))
 
     def send_message(self, message, neigh_remote_physical_port, neigh_local_physical_host, index):
-        msg = pickle.dumps(message)
-        self.send(msg, neigh_remote_physical_port, neigh_local_physical_host, index)
+        parts = self.break_to_chunks(pickle.dumps(message))
+        for i, part in enumerate(parts):
+            msg = pickle.dumps([self.message_id, i, len(parts), part])
+            self.send(msg, neigh_remote_physical_port, neigh_local_physical_host, index)
+        self.message_id += 1
 
 
 def read_link_data(file_name):
