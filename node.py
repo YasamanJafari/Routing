@@ -191,13 +191,17 @@ class Node:
         print(message[1])
 
     def up_interface(self, interface_id):
-        if self.neighbours_info[interface_id] == constant.UP:
+        if interface_id < 0 or interface_id >= len(self.neighbours_info):
+            print("This interface_id does not exist")
+        elif self.neighbours_info[interface_id].status == constant.UP:
             print("This interface is already up.")
         else:
             self.neighbours_info[interface_id].status = constant.UP
 
     def down_interface(self, interface_id):
-        if interface_id not in self.passing_node.values():
+        if interface_id < 0 or interface_id >= len(self.neighbours_info):
+            print("This interface_id does not exist")
+        elif self.neighbours_info[interface_id].status == constant.DOWN:
             print("This interface is already down.")
         else:
             interface_to_down = self.neighbours_info[interface_id]
