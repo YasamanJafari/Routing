@@ -35,9 +35,6 @@ class Node:
         return False, ""
 
     def run_handler(self, packet):
-        if packet[0][4] != 0 and packet[0][4] != 200:
-            print("******")
-            print(packet)
         if packet[0][4] in self.registered_handlers:
             exists, neighbour = self.check_if_interface_is_mine(packet[0][5])
             if exists and neighbour.status == constant.DOWN:
@@ -439,7 +436,6 @@ class Node:
             is_mine, nei = self.check_if_interface_is_mine(dest)
             send_msg = [local_virtual, self_virtual]
             if is_mine and not(dest == self_virtual):
-                print("*** ADDED ALL")
                 send_msg.append(dest)
 
             self.send_message(src, constant.TRACEROUTE_RESPONSE_PROTOCOL_NUM, send_msg, self_virtual)
@@ -464,10 +460,8 @@ class Node:
         dest = header[5]
         src = header[6]
 
-        print("GOT RESPONSE")
         is_mine, nei = self.check_if_interface_is_mine(dest)
         if is_mine:
-            print("HHHHHHEEEELLLLO", message)
             for item in body:
                 self.trace_route_result.append(item)
             print(self.trace_route_result, dest)
