@@ -121,9 +121,15 @@ class Node:
                 self.show_routes()
 
             elif items[0] == "down":
+                if len(items) != 2:
+                    print("Invalid form. Press help for more info.")
+                    continue
                 self.down_interface(int(items[1]))
 
             elif items[0] == "up":
+                if len(items) != 2:
+                    print("Invalid form. Press help for more info.")
+                    continue
                 self.up_interface(int(items[1]))
 
             elif items[0] == "send":
