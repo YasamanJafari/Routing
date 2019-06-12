@@ -1,3 +1,5 @@
+from traitlets import Integer
+
 import constant
 import time
 from link import Link
@@ -16,6 +18,7 @@ class Node:
         self.registered_handlers = {}
         self.link = Link(self.run_handler, self.physical_host, self.physical_port)
         self.link.create_neighbour_sockets(len(neighbours_info))
+        self.traceroute_result = []
 
     def register_handlers(self, protocol_num, handler):
         if protocol_num in self.registered_handlers:
@@ -37,7 +40,7 @@ class Node:
             elif exists and neighbour.status == constant.UP: 
                 self.registered_handlers.get(packet[0][4])(packet)
             if not exists:
-                self.send_message(packet[0][5], packet[0][4], packet[1])
+                self.send_message(packet[0][5], packet[0][4], packet[1], packet[0][6])
         else:
             print("This protocol number is not registered.")
 
@@ -107,8 +110,8 @@ class Node:
             count += 1
         return count
 
-    def get_header(self, destination_port, local_virtual, protocol, dest):
-        return [self.physical_host, self.physical_port, destination_port, local_virtual, protocol, dest]
+    def get_header(self, destination_port, local_virtual, protocol, dest, src):
+        return [self.physical_host, self.physical_port, destination_port, local_virtual, protocol, dest, src]
 
     def read_commands(self):
         while True:
@@ -135,7 +138,7 @@ class Node:
                         msg += data
                         if i != len(items[3:]) - 1:
                             msg += " "
-                    self.send_message(items[1], int(items[2]), msg)
+                    self.send_message(items[1], int(items[2]), msg, None)
 
             elif items[0] == "q":
                 for i in range(len(self.neighbours_info)-1, 0, -1):
@@ -145,6 +148,8 @@ class Node:
 
                 print("Goodbye!")
                 return
+            elif items[0] == "traceroute":
+                self.traceroute(items[1])
 
             else:
                 print("- help, h: Print this list of commands\n"
@@ -161,7 +166,7 @@ class Node:
             if neigh.remote_virtual_IP == dest:
                 return i
 
-    def send_message(self, dest, protocol_number, message):
+    def send_message(self, dest, protocol_number, message, src):
         if dest not in self.destination:
             print("Destination is not reachable.")
             return
@@ -175,7 +180,9 @@ class Node:
         if min_dist == 0:
             self.print_message(message)
         else:
-            header = self.get_header(port, local_interface, protocol_number, dest)
+            if src is None:
+                src = local_interface
+            header = self.get_header(port, local_interface, protocol_number, dest, src)
             self.link.send_message([header, message], port, host, i)
 
     def send_table(self):
@@ -184,7 +191,7 @@ class Node:
 
             for i, neighbour in enumerate(self.neighbours_info):
                 if not neighbour.status == constant.DOWN:
-                    header = self.get_header(neighbour.remote_physical_port, neighbour.local_virtual_IP, 200, neighbour.remote_virtual_IP)
+                    header = self.get_header(neighbour.remote_physical_port, neighbour.local_virtual_IP, 200, neighbour.remote_virtual_IP, neighbour.local_virtual_IP)
                     self.link.send_message([header, table_info],
                                          neighbour.remote_physical_port, neighbour.remote_physical_IP, i)
             time.sleep(1)
@@ -369,3 +376,24 @@ class Node:
             if not min_dist == float('inf'):
                 space_size = 8 - self.num_digits(min_dist)
                 print(str(min_dist) + " " * space_size + dest + " " * 5 + local_interface)
+
+    def traceroute(self, virtual_ip):
+        self.send_message(virtual_ip, 100, Integer.toString(constant.TRACEROUTE_QUERY_PROTOCOL_NUM), None)
+        self.traceroute_result = []
+
+    def handle_traceroute_query(self, message):
+        header = message[0]
+        body = message[1]
+
+        dest = header[5]
+        src = header[6]
+
+        packet_ttl = int(body)
+
+        # if packet_ttl == 1:
+        #     self.send_message()
+
+    def handle_traceroute_response(self, message):
+        pritn("not implemented")
+
+
