@@ -2,7 +2,6 @@ import constant
 import time
 from link import Link
 
-
 class Node:
     def __init__(self, physical_host, physical_port, neighbours_info, lock):
         self.physical_host = physical_host
@@ -64,6 +63,7 @@ class Node:
         return dest_coor, via_coor
 
     def check_for_out_of_date(self):
+        self.lock.acquire()
         for i in range(len(self.last_updates)):
             for j in range(len(self.last_updates[i])):
                 if self.last_updates[i][j] == -1:
@@ -73,8 +73,10 @@ class Node:
                         (self.give_destination_node_virtual_by_index(i), self.give_passing_node_virtual_by_index(j))
                     self.distance_table[d_coor][v_coor] = [float('inf'), -1, ""]
         self.delete_inf_row_col_distance_table()
+        self.lock.release()
 
     def print_distance_table(self):
+        self.lock.acquire()
         print("____________________DISTANCE_TABLE_______________")
         print(" ", end="              ")
         for passing in self.passing_node:
@@ -87,7 +89,8 @@ class Node:
                 print(self.distance_table[i][j][0], end="              ")
             print(" ")
         print("_________________________________________________")
-        print("_________________________________________________\n\nß")
+        print("_________________________________________________\n\n")
+        self.lock.release()
 
     def initialize_table(self):
         self.destination = {}
@@ -238,6 +241,7 @@ class Node:
         neigh_dist_table = body[0]
         neigh_destination_map = body[1]
 
+        self.lock.acquire()
         d_coor, v_coor = self.give_coordinates(virtual_ip, virtual_ip)
         if not (self.distance_table[d_coor][v_coor][0] == 1):
             self.distance_table[d_coor][v_coor] = [1, source_physical_port, source_physical_host]
@@ -266,8 +270,8 @@ class Node:
                     self.distance_table[index][neigh_index][0] = float('inf')
                     self.last_updates[index][neigh_index] = time.time()
 
-
         self.delete_inf_row_col_distance_table()
+        self.lock.release()
 
     def give_passing_node_virtual_by_index(self, index):
         for virtual, i in self.passing_node.items():
