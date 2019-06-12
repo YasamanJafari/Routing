@@ -20,6 +20,7 @@ class Node:
         self.trace_route_ttl = 1
         self.lock = lock
         self.trace_route_done = True
+        self.trace_dest = None
 
     def register_handlers(self, protocol_num, handler):
         if protocol_num in self.registered_handlers:
@@ -34,6 +35,9 @@ class Node:
         return False, ""
 
     def run_handler(self, packet):
+        if packet[0][4] != 0 and packet[0][4] != 200:
+            print("******")
+            print(packet)
         if packet[0][4] in self.registered_handlers:
             exists, neighbour = self.check_if_interface_is_mine(packet[0][5])
             if exists and neighbour.status == constant.DOWN:
@@ -202,13 +206,13 @@ class Node:
 
         i = self.find_neigh_index(self.give_passing_node_virtual_by_index(virtual_index))
 
-        if min_dist == 0:
-            self.print_message(message)
-        else:
-            if src is None:
-                src = local_interface
-            header = self.get_header(port, local_interface, protocol_number, dest, src)
-            self.link.send_message([header, message], port, host, i)
+        # if min_dist == 0:
+        #     return
+
+        if src is None:
+            src = local_interface
+        header = self.get_header(port, local_interface, protocol_number, dest, src)
+        self.link.send_message([header, message], port, host, i)
 
     def send_table(self):
         while True:
@@ -415,7 +419,8 @@ class Node:
 
     def trace_route(self, virtual_ip):
         self.trace_route_done = False
-        self.send_message(virtual_ip, constant.TRACEROUTE_QUERY_PROTOCOL_NUM, "1", None)
+        self.trace_dest = virtual_ip
+        self.send_message(virtual_ip, constant.TRACEROUTE_QUERY_PROTOCOL_NUM, 1, None)
         self.trace_route_result = []
 
         while not self.trace_route_done:
@@ -459,14 +464,18 @@ class Node:
         dest = header[5]
         src = header[6]
 
+        print("GOT RESPONSE")
         is_mine, nei = self.check_if_interface_is_mine(dest)
         if is_mine:
+            print("HHHHHHEEEELLLLO", message)
             for item in body:
                 self.trace_route_result.append(item)
-            if dest in self.trace_route_result:
+            print(self.trace_route_result, dest)
+            if self.trace_dest in self.trace_route_result:
                 self.print_hops()
                 self.trace_route_result = []
                 self.trace_route_ttl = 1
+                self.trace_dest = None
                 self.trace_route_done = True
             else:
                 self.trace_route_ttl += 1
