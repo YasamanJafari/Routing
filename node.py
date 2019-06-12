@@ -18,7 +18,8 @@ class Node:
         self.registered_handlers = {}
         self.link = Link(self.run_handler, self.physical_host, self.physical_port)
         self.link.create_neighbour_sockets(len(neighbours_info))
-        self.traceroute_result = []
+        self.trace_route_result = []
+        self.trace_route_ttl = 1
 
     def register_handlers(self, protocol_num, handler):
         if protocol_num in self.registered_handlers:
@@ -149,7 +150,7 @@ class Node:
                 print("Goodbye!")
                 return
             elif items[0] == "traceroute":
-                self.traceroute(items[1])
+                self.trace_route(items[1])
 
             else:
                 print("- help, h: Print this list of commands\n"
@@ -377,11 +378,13 @@ class Node:
                 space_size = 8 - self.num_digits(min_dist)
                 print(str(min_dist) + " " * space_size + dest + " " * 5 + local_interface)
 
-    def traceroute(self, virtual_ip):
+    def trace_route(self, virtual_ip):
         self.send_message(virtual_ip, constant.TRACEROUTE_QUERY_PROTOCOL_NUM, "1", None)
-        self.traceroute_result = []
+        self.trace_route_result = []
 
-    def handle_traceroute_query(self, message):
+        #while
+
+    def handle_trace_route_query(self, message):
         header = message[0]
         body = message[1]
 
@@ -393,18 +396,39 @@ class Node:
 
         if packet_ttl == 1:
             self_virtual = self.search_for_connected_local_interface(local_virtual)
-            self.send_message(src, constant.TRACEROUTE_RESPONSE_PROTOCOL_NUM, " ", self_virtual)
+            self.send_message(src, constant.TRACEROUTE_RESPONSE_PROTOCOL_NUM, [local_virtual, self_virtual], self_virtual)
         else:
             new_ttl = packet_ttl - 1
             self.send_message(dest, constant.TRACEROUTE_QUERY_PROTOCOL_NUM, Integer.toString(new_ttl), src)
 
-    def handle_traceroute_response(self, message):
+    def print_hops(self):
+        print("Traceroute from", self.trace_route_result[0], "to", self.trace_route_result[-1])
+
+        index = 1
+        for hop in self.trace_route_result:
+            print(index, hop)
+            index += 1
+
+        print("Traceroute finished in", index, "hops")
+
+    def handle_trace_route_response(self, message):
         header = message[0]
         body = message[1]
 
         dest = header[5]
         src = header[6]
 
-        self.send_message(dest, constant.TRACEROUTE_RESPONSE_PROTOCOL_NUM, body, src)
+        if self.check_if_interface_is_mine(dest):
+            for item in body:
+                self.trace_route_result.append(item)
+            if dest in self.trace_route_result:
+                self.print_hops()
+                self.trace_route_result = []
+                self.trace_route_ttl = 1
+            else:
+                self.trace_route_ttl += 1
+                self.send_message(dest, constant.TRACEROUTE_QUERY_PROTOCOL_NUM, self.trace_route_ttl, None)
+        else:
+            self.send_message(dest, constant.TRACEROUTE_RESPONSE_PROTOCOL_NUM, body, src)
 
 
