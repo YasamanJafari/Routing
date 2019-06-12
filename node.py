@@ -123,9 +123,15 @@ class Node:
             text = input("> ")
             items = (text.split(" "))
             if items[0] == "interfaces" or items[0] == "li":
+                if len(items) != 1:
+                    print("Invalid form. Press help for more info.")
+                    continue
                 self.show_interfaces()
 
             elif items[0] == "routes" or items[0] == "lr":
+                if len(items) != 1:
+                    print("Invalid form. Press help for more info.")
+                    continue
                 self.show_routes()
 
             elif items[0] == "down":
@@ -152,6 +158,9 @@ class Node:
                     self.send_message(items[1], int(items[2]), msg, None)
 
             elif items[0] == "q":
+                if len(items) != 1:
+                    print("Invalid form. Press help for more info.")
+                    continue
                 for i in range(len(self.neighbours_info)-1, 0, -1):
                     print(i, len(self.neighbours_info))
                     if not self.neighbours_info[i].status == constant.DOWN:
@@ -161,6 +170,9 @@ class Node:
                 return
 
             elif items[0] == "traceroute":
+                if len(items) != 2:
+                    print("Invalid form. Press help for more info.")
+                    continue
                 self.trace_route(items[1])
 
             else:
@@ -422,6 +434,7 @@ class Node:
             is_mine, nei = self.check_if_interface_is_mine(dest)
             send_msg = [local_virtual, self_virtual]
             if is_mine and not(dest == self_virtual):
+                print("*** ADDED ALL")
                 send_msg.append(dest)
 
             self.send_message(src, constant.TRACEROUTE_RESPONSE_PROTOCOL_NUM, send_msg, self_virtual)
