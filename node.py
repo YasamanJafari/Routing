@@ -49,7 +49,9 @@ class Node:
             for row in self.last_updates:
                 row.append(0)
             self.passing_node[via] = len(self.passing_node)
+        via_coor = self.passing_node.get(via)
 
+        if dest not in self.destination:
             self.destination[dest] = len(self.destination)
             if len(self.distance_table) > 0:
                 self.distance_table.append([[float('inf'), -1, ""]] * len(self.distance_table[0]))
@@ -58,13 +60,6 @@ class Node:
             else:
                 self.distance_table.append([[float('inf'), -1, ""]])
                 self.last_updates.append([0])
-        via_coor = self.passing_node.get(via)
-
-        if dest not in self.destination:
-            self.distance_table.append([[float('inf'), -1, ""]] * len(self.distance_table[0]))
-            self.last_updates.append([0] * len(self.last_updates[0]))
-            self.destination[dest] = len(self.destination)
-
         dest_coor = self.destination.get(dest)
 
         return dest_coor, via_coor
@@ -245,9 +240,21 @@ class Node:
                 return virtual
 
     def give_destination_node_virtual_by_index(self, index):
+        print("#####################")
+        for item in self.destination:
+            print(self.destination[item])
+        print("#####################")
+
+        print("Start______________")
+        print("index = ", index)
         for virtual, i in self.destination.items():
+            print("i = ", i)
             if index == i:
+                print("HEREEEEEEEEEE")
+                print("End______________")
                 return virtual
+        print("End______________")
+
 
     def row_is_infinity(self, i):
         infinity = True
@@ -271,12 +278,17 @@ class Node:
     def update_passing_map_after(self, i):
         for virtual, index in self.passing_node.items():
             if index > i:
-                self.destination[virtual] = index - 1
+                self.passing_node[virtual] = index - 1
 
     def delete_dests(self, dests):
         dests.sort()
         while len(dests) > 0:
             del self.distance_table[dests[0]]
+            print("____________________")
+            print(dests[0])
+            print(self.give_destination_node_virtual_by_index(dests[0]))
+            print(len(self.destination) )
+            print("____________________")
             del self.destination[self.give_destination_node_virtual_by_index(dests[0])]
             self.update_dest_map_after(dests[0])
             del dests[0]
