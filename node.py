@@ -337,7 +337,7 @@ class Node:
         self.delete_dests(inf_row)
         self.delete_passings(inf_col)
 
-    def search_for_local_interface(self, virtual):
+    def search_for_connected_local_interface(self, virtual):
         for neighbour in self.neighbours_info:
             if neighbour.remote_virtual_IP == virtual:
                 return neighbour.local_virtual_IP
@@ -352,7 +352,7 @@ class Node:
                 min_dist = dist_instance[0]
                 virtual_index = i
         if not (min_dist == 0):
-            local_interface = self.search_for_local_interface(self.give_passing_node_virtual_by_index(virtual_index))
+            local_interface = self.search_for_connected_local_interface(self.give_passing_node_virtual_by_index(virtual_index))
         else:
             local_interface = dest
         # return local_interface, min_dist
@@ -378,22 +378,33 @@ class Node:
                 print(str(min_dist) + " " * space_size + dest + " " * 5 + local_interface)
 
     def traceroute(self, virtual_ip):
-        self.send_message(virtual_ip, 100, Integer.toString(constant.TRACEROUTE_QUERY_PROTOCOL_NUM), None)
+        self.send_message(virtual_ip, constant.TRACEROUTE_QUERY_PROTOCOL_NUM, "1", None)
         self.traceroute_result = []
 
     def handle_traceroute_query(self, message):
         header = message[0]
         body = message[1]
 
+        local_virtual = header[3]
         dest = header[5]
         src = header[6]
 
         packet_ttl = int(body)
 
-        # if packet_ttl == 1:
-        #     self.send_message()
+        if packet_ttl == 1:
+            self_virtual = self.search_for_connected_local_interface(local_virtual)
+            self.send_message(src, constant.TRACEROUTE_RESPONSE_PROTOCOL_NUM, " ", self_virtual)
+        else:
+            new_ttl = packet_ttl - 1
+            self.send_message(dest, constant.TRACEROUTE_QUERY_PROTOCOL_NUM, Integer.toString(new_ttl), src)
 
     def handle_traceroute_response(self, message):
-        pritn("not implemented")
+        header = message[0]
+        body = message[1]
+
+        dest = header[5]
+        src = header[6]
+
+        self.send_message(dest, constant.TRACEROUTE_RESPONSE_PROTOCOL_NUM, body, src)
 
 
