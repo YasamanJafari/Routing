@@ -396,7 +396,12 @@ class Node:
 
         if packet_ttl == 1:
             self_virtual = self.search_for_connected_local_interface(local_virtual)
-            self.send_message(src, constant.TRACEROUTE_RESPONSE_PROTOCOL_NUM, [local_virtual, self_virtual], self_virtual)
+            is_mine, nei = self.check_if_interface_is_mine(dest)
+            send_msg = [local_virtual, self_virtual]
+            if is_mine and not(dest == self_virtual):
+                send_msg.append(dest)
+
+            self.send_message(src, constant.TRACEROUTE_RESPONSE_PROTOCOL_NUM, send_msg, self_virtual)
         else:
             new_ttl = packet_ttl - 1
             self.send_message(dest, constant.TRACEROUTE_QUERY_PROTOCOL_NUM, Integer.toString(new_ttl), src)
@@ -418,7 +423,8 @@ class Node:
         dest = header[5]
         src = header[6]
 
-        if self.check_if_interface_is_mine(dest):
+        is_mine, nei = self.check_if_interface_is_mine(dest)
+        if is_mine:
             for item in body:
                 self.trace_route_result.append(item)
             if dest in self.trace_route_result:
