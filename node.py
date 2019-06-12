@@ -1,5 +1,3 @@
-from traitlets import Integer
-
 import constant
 import time
 from link import Link
@@ -182,6 +180,7 @@ class Node:
     def send_message(self, dest, protocol_number, message, src):
         if dest not in self.destination:
             print("Destination is not reachable.")
+            self.trace_route_done = True
             return
         local_interface, send_info, virtual_index = self.find_hop(dest)
         min_dist = send_info[0]
@@ -411,13 +410,11 @@ class Node:
 
     def handle_trace_route_query(self, message):
         header = message[0]
-        body = message[1]
+        packet_ttl = message[1]
 
         local_virtual = header[3]
         dest = header[5]
         src = header[6]
-
-        packet_ttl = int(body)
 
         if packet_ttl == 1:
             self_virtual = self.search_for_connected_local_interface(local_virtual)
@@ -429,7 +426,7 @@ class Node:
             self.send_message(src, constant.TRACEROUTE_RESPONSE_PROTOCOL_NUM, send_msg, self_virtual)
         else:
             new_ttl = packet_ttl - 1
-            self.send_message(dest, constant.TRACEROUTE_QUERY_PROTOCOL_NUM, Integer.toString(new_ttl), src)
+            self.send_message(dest, constant.TRACEROUTE_QUERY_PROTOCOL_NUM, new_ttl, src)
 
     def print_hops(self):
         print("Traceroute from", self.trace_route_result[0], "to", self.trace_route_result[-1])
