@@ -19,6 +19,7 @@ def main(file_name):
     t2.start()
     t3.start()
     this_node.read_commands()
+    print("QUIT")
     t1.join()
     t2.join()
     t3.join()
