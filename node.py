@@ -129,10 +129,15 @@ class Node:
                 self.up_interface(items[1])
 
             elif items[0] == "send":
-                if len(items) != 4:
+                if len(items) < 4:
                     print("Invalid form. Press help for more info.")
                 else:
-                    self.send_message(items[1], int(items[2]), items[3])
+                    msg = ""
+                    for i, data in enumerate(items[3:]):
+                        msg += data
+                        if i != len(items[3:]) - 1:
+                            msg += " "
+                    self.send_message(items[1], int(items[2]), msg)
 
             elif items[0] == "q":
                 for i in range(len(self.neighbours_info)-1, 0, -1):
@@ -167,7 +172,6 @@ class Node:
         port = send_info[1]
         host = send_info[2]
 
-        print(self.give_passing_node_virtual_by_index(virtual_index))
         i = self.find_neigh_index(self.give_passing_node_virtual_by_index(virtual_index))
 
         if min_dist == 0:
@@ -344,22 +348,6 @@ class Node:
         # return local_interface, min_dist
 
         return local_interface, self.distance_table[dest_index][virtual_index], virtual_index
-
-    # def find_hop(self, dest):
-    #     dest_index = self.destination[dest]
-    #     min_dist = self.distance_table[dest_index][0][0]
-    #     virtual_index = 0
-    #     for dist_instance, i in enumerate(self.distance_table[dest_index]):
-    #         if min_dist > dist_instance[0]:
-    #             min_dist = dist_instance[0]
-    #             virtual_index = i
-    #
-    #     return self.distance_table[dest_index][virtual_index], virtual_index
-    #     # if not min_dist == 0:
-    #     #     local_interface = self.search_for_local_interface(self.give_passing_node_virtual_by_index(virtual_index))
-    #     # else:
-    #     #     local_interface = dest
-    #     # return local_interface, min_dist
 
     def show_interfaces(self):
         print("id    rem            loc")
