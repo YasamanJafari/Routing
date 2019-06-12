@@ -38,7 +38,7 @@ class Node:
             elif exists and neighbour.status == constant.UP:
                 self.registered_handlers.get(packet[0][4])(packet)
             if not exists:
-                self.send_message(packet[0][5], packet[0][4], packet)
+                self.send_message(packet[0][5], packet[0][4], packet[1])
         else:
             print("This protocol number is not registered.")
 
@@ -186,7 +186,6 @@ class Node:
 
     def print_message(self, message):
         print(message[1])
-
 
     def up_interface(self, interface_id):
         if interface_id in self.neighbours_info and self.neighbours_info[interface_id] == constant.UP:
