@@ -135,9 +135,13 @@ class Node:
                     self.send_message(items[1], int(items[2]), items[3])
 
             elif items[0] == "q":
-                print("Not Implemented.")
-                quit(0)
-                break
+                for i in range(len(self.neighbours_info)-1, 0, -1):
+                    print(i, len(self.neighbours_info))
+                    if not self.neighbours_info[i].status == constant.DOWN:
+                        self.down_interface(i)
+
+                print("Goodbye!")
+                return
 
             else:
                 print("- help, h: Print this list of commands\n"
@@ -187,7 +191,7 @@ class Node:
         print(message[1])
 
     def up_interface(self, interface_id):
-        if interface_id in self.neighbours_info and self.neighbours_info[interface_id] == constant.UP:
+        if self.neighbours_info[interface_id] == constant.UP:
             print("This interface is already up.")
         else:
             self.neighbours_info[interface_id].status = constant.UP
