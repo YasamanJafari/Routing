@@ -33,7 +33,6 @@ class Node:
         if packet[0][4] in self.registered_handlers:
             exists, neighbour = self.check_if_interface_is_mine(packet[0][5])
             if exists and neighbour.status == constant.DOWN:
-                print("The given interface is currently down")
                 return
             elif exists and neighbour.status == constant.UP: 
                 self.registered_handlers.get(packet[0][4])(packet)
