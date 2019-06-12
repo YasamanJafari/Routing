@@ -216,6 +216,9 @@ class Node:
                     dest_coor, via_coor = self.give_coordinates(virtual_IP, interface.local_virtual_IP)
                     self.distance_table[dest_coor][via_coor] = [0, self.physical_port, self.physical_host]
                     self.last_updates[dest_coor][via_coor] = -1
+                    dest_coor, via_coor = self.give_coordinates(interface.local_virtual_IP, virtual_IP)
+                    self.distance_table[dest_coor][via_coor] = [0, self.physical_port, self.physical_host]
+                    self.last_updates[dest_coor][via_coor] = -1
             self.neighbours_info[interface_id].status = constant.UP
 
     def down_interface(self, interface_id):
