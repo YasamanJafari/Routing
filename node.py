@@ -194,16 +194,20 @@ class Node:
         if interface_id in self.neighbours_info and self.neighbours_info[interface_id] == constant.UP:
             print("This interface is already up.")
         else:
-            interface_to_up = self.neighbours_info[interface_id]
-            virtual_IP = interface_to_up.remote_virtual_IP
-            d_coor, v_coor = self.give_coordinates(virtual_IP, virtual_IP)
-            self.distance_table[d_coor][v_coor][0] = 1
-            self.last_updates[d_coor][v_coor] = time.time()
             self.neighbours_info[interface_id].status = constant.UP
 
     def down_interface(self, interface_id):
         if interface_id not in self.passing_node.values():
             print("This interface is already down.")
+        else:
+            interface_to_down = self.neighbours_info[interface_id]
+            rem_virtual_IP = interface_to_down.remote_virtual_IP
+            loc_virtual_IP = interface_to_down.local_virtual_IP
+
+            self.delete_dests([self.destination[rem_virtual_IP], self.destination[loc_virtual_IP]])
+            self.delete_passings([self.passing_node[rem_virtual_IP], self.passing_node[loc_virtual_IP]])
+
+            self.neighbours_info[interface_id].status = constant.UP
 
     def update_distance_table(self, message):
         header = message[0]
@@ -213,7 +217,6 @@ class Node:
         virtual_ip = header[3]
         neigh_dist_table = body[0]
         neigh_destination_map = body[1]
-
 
         d_coor, v_coor = self.give_coordinates(virtual_ip, virtual_ip)
         if not (self.distance_table[d_coor][v_coor][0] == 1):
