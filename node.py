@@ -123,7 +123,6 @@ class Node:
                 self.show_routes()
 
             elif items[0] == "down":
-                print("Not Implemented.")
                 self.down_interface(items[1])
 
             elif items[0] == "up":
@@ -359,16 +358,12 @@ class Node:
     #     # return local_interface, min_dist
 
     def show_interfaces(self):
-        i = 0
         print("id    rem            loc")
 
-        for neighbor in self.neighbours_info:
-            if neighbor.status == constant.DOWN:
-                i += 1
-                continue
-            space_size = 6 - self.num_digits(i)
-            print(str(i) + " " * space_size + neighbor.remote_virtual_IP + " " * 5 + neighbor.local_virtual_IP)
-            i += 1
+        for i, neighbor in enumerate(self.neighbours_info):
+            if not neighbor.status == constant.DOWN:
+                space_size = 6 - self.num_digits(i)
+                print(str(i) + " " * space_size + neighbor.remote_virtual_IP + " " * 5 + neighbor.local_virtual_IP)
 
     def show_routes(self):
         print("cost    dst             loc")
