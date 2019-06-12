@@ -39,7 +39,8 @@ class Node:
             exists, neighbour = self.check_if_interface_is_mine(packet[0][5])
             if exists and neighbour.status == constant.DOWN:
                 return
-            elif exists and neighbour.status == constant.UP: 
+            elif (exists and neighbour.status == constant.UP) or \
+                    ((not exists) and packet[0][4] == constant.TRACEROUTE_QUERY_PROTOCOL_NUM):
                 self.registered_handlers.get(packet[0][4])(packet)
             if not exists:
                 self.send_message(packet[0][5], packet[0][4], packet[1], packet[0][6])
@@ -197,14 +198,10 @@ class Node:
             self.trace_route_done = True
             return
         local_interface, send_info, virtual_index = self.find_hop(dest)
-        min_dist = send_info[0]
         port = send_info[1]
         host = send_info[2]
 
         i = self.find_neigh_index(self.give_passing_node_virtual_by_index(virtual_index))
-
-        # if min_dist == 0:
-        #     return
 
         if src is None:
             src = local_interface
@@ -432,6 +429,7 @@ class Node:
         src = header[6]
 
         if packet_ttl == 1:
+            print("DEAD")
             self_virtual = self.search_for_connected_local_interface(local_virtual)
             is_mine, nei = self.check_if_interface_is_mine(dest)
             send_msg = [local_virtual, self_virtual]
@@ -451,7 +449,7 @@ class Node:
             print(index, hop)
             index += 1
 
-        print("Traceroute finished in", index, "hops")
+        print("Traceroute finished in", index - 1, "hops")
 
     def handle_trace_route_response(self, message):
         header = message[0]
@@ -464,7 +462,6 @@ class Node:
         if is_mine:
             for item in body:
                 self.trace_route_result.append(item)
-            print(self.trace_route_result, dest)
             if self.trace_dest in self.trace_route_result:
                 self.print_hops()
                 self.trace_route_result = []
@@ -473,7 +470,7 @@ class Node:
                 self.trace_route_done = True
             else:
                 self.trace_route_ttl += 1
-                self.send_message(dest, constant.TRACEROUTE_QUERY_PROTOCOL_NUM, self.trace_route_ttl, None)
+                self.send_message(self.trace_dest, constant.TRACEROUTE_QUERY_PROTOCOL_NUM, self.trace_route_ttl, None)
         else:
             self.send_message(dest, constant.TRACEROUTE_RESPONSE_PROTOCOL_NUM, body, src)
 
