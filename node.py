@@ -2,6 +2,7 @@ import constant
 import time
 from link import Link
 
+
 class Node:
     def __init__(self, physical_host, physical_port, neighbours_info, lock):
         self.physical_host = physical_host
@@ -208,6 +209,13 @@ class Node:
         elif self.neighbours_info[interface_id].status == constant.UP:
             print("This interface is already up.")
         else:
+            interface_to_up = self.neighbours_info[interface_id]
+            virtual_IP = interface_to_up.remote_virtual_IP
+            for interface in self.neighbours_info:
+                if interface.status != constant.DOWN:
+                    dest_coor, via_coor = self.give_coordinates(virtual_IP, interface.local_virtual_IP)
+                    self.distance_table[dest_coor][via_coor] = [0, self.physical_port, self.physical_host]
+                    self.last_updates[dest_coor][via_coor] = -1
             self.neighbours_info[interface_id].status = constant.UP
 
     def down_interface(self, interface_id):
