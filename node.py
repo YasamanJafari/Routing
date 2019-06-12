@@ -35,7 +35,7 @@ class Node:
             if exists and neighbour.status == constant.DOWN:
                 print("The given interface is currently down")
                 return
-            elif exists and neighbour.status == constant.UP:
+            elif exists and neighbour.status == constant.UP: 
                 self.registered_handlers.get(packet[0][4])(packet)
             if not exists:
                 self.send_message(packet[0][5], packet[0][4], packet[1])
