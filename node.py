@@ -77,11 +77,13 @@ class Node:
 
     def print_distance_table(self):
         print("____________________DISTANCE_TABLE_______________")
+        print(" ", end="              ")
         for dest in self.destination:
             print(dest, end="    ")
         print(" ")
         print("_________________________________________________")
         for i in range(len(self.distance_table)):
+            print(self.give_destination_node_virtual_by_index(i), end="  | ")
             for j in range(len(self.distance_table[i])):
                 print(self.distance_table[i][j][0], end="              ")
             print(" ")
@@ -162,7 +164,12 @@ class Node:
         min_dist = send_info[0]
         port = send_info[1]
         host = send_info[2]
+
+        print("_______________")
+        print(virtual_index)
+        print(self.give_passing_node_virtual_by_index(virtual_index))
         i = self.find_neigh_index(self.give_passing_node_virtual_by_index(virtual_index))
+        print("#####", i)
 
         if min_dist == 0:
             self.print_message(message)
@@ -317,15 +324,21 @@ class Node:
         dest_index = self.destination[dest]
         min_dist = self.distance_table[dest_index][0][0]
         virtual_index = 0
-        for i, dist_instance in enumerate(self.distance_table[dest_index]):
+        i = 0
+        for dist_instance in self.distance_table[dest_index]:
             if min_dist > dist_instance[0]:
                 min_dist = dist_instance[0]
                 virtual_index = i
+            i += 1
+
         if not min_dist == 0:
             local_interface = self.search_for_local_interface(self.give_passing_node_virtual_by_index(virtual_index))
         else:
             local_interface = dest
         # return local_interface, min_dist
+
+        self.print_distance_table()
+        print("%%%%%%%", virtual_index)
         return local_interface, self.distance_table[dest_index][virtual_index], virtual_index
 
     # def find_hop(self, dest):
