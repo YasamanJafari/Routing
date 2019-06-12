@@ -149,21 +149,26 @@ class Node:
                       "- send [ip] [protocol] [payload]: sends payload with protocol=protocol to virtual-ip ip\n"
                       "- q: quit this node\n")
 
-    def find_addr(self, local_interface):
-        i = 0
-        for neighbour in self.neighbours_info:
-            if neighbour.local_virtual_IP == local_interface:
-                return neighbour.remote_physical_port, neighbour.remote_physical_IP, i
-            i += 1
+    def find_neigh_index(self, dest):
+        for i, neigh in enumerate(self.neighbours_info):
+            if neigh.remote_virtual_IP == dest:
+                return i
 
     def send_message(self, dest, protocol_number, message):
         if dest not in self.destination:
             print("Destination is not reachable.")
             return
-        local_interface, min_dist = self.find_hop(dest)
-        port, host, i = self.find_addr(local_interface)
-        header = self.get_header(port, local_interface, protocol_number, dest)
-        self.link.send_message([header, message], port, host, i)
+        local_interface, send_info, virtual_index = self.find_hop(dest)
+        min_dist = send_info[0]
+        port = send_info[1]
+        host = send_info[2]
+        i = self.find_neigh_index(dest)
+
+        if min_dist == 0:
+            self.print_message(message)
+        else:
+            header = self.get_header(port, local_interface, protocol_number, dest)
+            self.link.send_message([header, message], port, host, i)
 
     def send_table(self):
         while True:
@@ -313,17 +318,32 @@ class Node:
         dest_index = self.destination[dest]
         min_dist = self.distance_table[dest_index][0][0]
         virtual_index = 0
-        i = 0
-        for dist_instance in self.distance_table[dest_index]:
+        for i, dist_instance in enumerate(self.distance_table[dest_index]):
             if min_dist > dist_instance[0]:
                 min_dist = dist_instance[0]
                 virtual_index = i
-            i += 1
         if not min_dist == 0:
             local_interface = self.search_for_local_interface(self.give_passing_node_virtual_by_index(virtual_index))
         else:
             local_interface = dest
-        return local_interface, min_dist
+        # return local_interface, min_dist
+        return local_interface, self.distance_table[dest_index][virtual_index], virtual_index
+
+    # def find_hop(self, dest):
+    #     dest_index = self.destination[dest]
+    #     min_dist = self.distance_table[dest_index][0][0]
+    #     virtual_index = 0
+    #     for dist_instance, i in enumerate(self.distance_table[dest_index]):
+    #         if min_dist > dist_instance[0]:
+    #             min_dist = dist_instance[0]
+    #             virtual_index = i
+    #
+    #     return self.distance_table[dest_index][virtual_index], virtual_index
+    #     # if not min_dist == 0:
+    #     #     local_interface = self.search_for_local_interface(self.give_passing_node_virtual_by_index(virtual_index))
+    #     # else:
+    #     #     local_interface = dest
+    #     # return local_interface, min_dist
 
     def show_interfaces(self):
         i = 0
@@ -341,7 +361,8 @@ class Node:
         print("cost    dst             loc")
 
         for dest in self.destination:
-            local_interface, min_dist = self.find_hop(dest)
+            local_interface, distance_info, virtual_index = self.find_hop(dest)
+            min_dist = distance_info[0]
             if not min_dist == float('inf'):
                 space_size = 8 - self.num_digits(min_dist)
                 print(str(min_dist) + " " * space_size + dest + " " * 5 + local_interface)
