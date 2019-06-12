@@ -21,7 +21,7 @@ class Node:
         self.trace_route_result = []
         self.trace_route_ttl = 1
         self.lock = lock
-        
+        self.trace_route_done = True
 
     def register_handlers(self, protocol_num, handler):
         if protocol_num in self.registered_handlers:
@@ -404,8 +404,10 @@ class Node:
     def trace_route(self, virtual_ip):
         self.send_message(virtual_ip, constant.TRACEROUTE_QUERY_PROTOCOL_NUM, "1", None)
         self.trace_route_result = []
+        self.trace_route_done = False
 
-        #while
+        while not self.trace_route_done:
+            continue
 
     def handle_trace_route_query(self, message):
         header = message[0]
@@ -454,6 +456,7 @@ class Node:
                 self.print_hops()
                 self.trace_route_result = []
                 self.trace_route_ttl = 1
+                self.trace_route_done = True
             else:
                 self.trace_route_ttl += 1
                 self.send_message(dest, constant.TRACEROUTE_QUERY_PROTOCOL_NUM, self.trace_route_ttl, None)
