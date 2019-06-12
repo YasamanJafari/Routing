@@ -162,7 +162,7 @@ class Node:
         min_dist = send_info[0]
         port = send_info[1]
         host = send_info[2]
-        i = self.find_neigh_index(dest)
+        i = self.find_neigh_index(self.give_passing_node_virtual_by_index(virtual_index))
 
         if min_dist == 0:
             self.print_message(message)
