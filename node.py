@@ -75,13 +75,18 @@ class Node:
                     self.distance_table[d_coor][v_coor] = [float('inf'), -1, ""]
 
     def print_distance_table(self):
+        print("____________________DISTANCE_TABLE_______________")
         for dest in self.destination:
             print(dest, end="    ")
         print(" ")
+        print("_________________________________________________")
         for i in range(len(self.distance_table)):
             for j in range(len(self.distance_table[i])):
                 print(self.distance_table[i][j][0], end="              ")
             print(" ")
+        print("_________________________________________________")
+        print("_________________________________________________\n\nß")
+
 
     def initialize_table(self):
         self.destination = {}
@@ -223,6 +228,10 @@ class Node:
         neigh_index = self.passing_node[virtual_ip]
         for index in range(len(self.distance_table)):
             if not self.give_passing_node_virtual_by_index(index) in neigh_destination_map:
+                self.print_distance_table()
+                print(index, neigh_index)
+                print(self.distance_table[index][neigh_index])
+
                 self.distance_table[index][neigh_index][0] = float('inf')
                 self.delete_inf_row_col_distance_table()
             # distance_info = self.distance_table[index][neigh_index]
@@ -240,21 +249,9 @@ class Node:
                 return virtual
 
     def give_destination_node_virtual_by_index(self, index):
-        print("#####################")
-        for item in self.destination:
-            print(self.destination[item])
-        print("#####################")
-
-        print("Start______________")
-        print("index = ", index)
         for virtual, i in self.destination.items():
-            print("i = ", i)
             if index == i:
-                print("HEREEEEEEEEEE")
-                print("End______________")
                 return virtual
-        print("End______________")
-
 
     def row_is_infinity(self, i):
         infinity = True
@@ -284,11 +281,6 @@ class Node:
         dests.sort()
         while len(dests) > 0:
             del self.distance_table[dests[0]]
-            print("____________________")
-            print(dests[0])
-            print(self.give_destination_node_virtual_by_index(dests[0]))
-            print(len(self.destination) )
-            print("____________________")
             del self.destination[self.give_destination_node_virtual_by_index(dests[0])]
             self.update_dest_map_after(dests[0])
             del dests[0]
