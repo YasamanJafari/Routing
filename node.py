@@ -123,7 +123,6 @@ class Node:
                 self.show_routes()
 
             elif items[0] == "down":
-                print("Not Implemented.")
                 self.down_interface(items[1])
 
             elif items[0] == "up":
@@ -180,15 +179,12 @@ class Node:
     def send_table(self):
         while True:
             table_info = [self.distance_table, self.destination, self.passing_node]
-            i = 0
-            for neighbour in self.neighbours_info:
-                if neighbour.status == constant.DOWN:
-                    i += 1
-                    continue
-                header = self.get_header(neighbour.remote_physical_port, neighbour.local_virtual_IP, 200, neighbour.remote_virtual_IP)
-                self.link.send_message([header, table_info],
-                                     neighbour.remote_physical_port, neighbour.remote_physical_IP, i)
-                i += 1
+
+            for i, neighbour in enumerate(self.neighbours_info):
+                if not neighbour.status == constant.DOWN:
+                    header = self.get_header(neighbour.remote_physical_port, neighbour.local_virtual_IP, 200, neighbour.remote_virtual_IP)
+                    self.link.send_message([header, table_info],
+                                         neighbour.remote_physical_port, neighbour.remote_physical_IP, i)
             time.sleep(1)
 
     def print_message(self, message):
@@ -198,16 +194,20 @@ class Node:
         if interface_id in self.neighbours_info and self.neighbours_info[interface_id] == constant.UP:
             print("This interface is already up.")
         else:
-            interface_to_up = self.neighbours_info[interface_id]
-            virtual_IP = interface_to_up.remote_virtual_IP
-            d_coor, v_coor = self.give_coordinates(virtual_IP, virtual_IP)
-            self.distance_table[d_coor][v_coor][0] = 1
-            self.last_updates[d_coor][v_coor] = time.time()
             self.neighbours_info[interface_id].status = constant.UP
 
     def down_interface(self, interface_id):
         if interface_id not in self.passing_node.values():
             print("This interface is already down.")
+        else:
+            interface_to_down = self.neighbours_info[interface_id]
+            rem_virtual_IP = interface_to_down.remote_virtual_IP
+            loc_virtual_IP = interface_to_down.local_virtual_IP
+
+            self.delete_dests([self.destination[rem_virtual_IP], self.destination[loc_virtual_IP]])
+            self.delete_passings([self.passing_node[rem_virtual_IP], self.passing_node[loc_virtual_IP]])
+
+            self.neighbours_info[interface_id].status = constant.UP
 
     def update_distance_table(self, message):
         header = message[0]
@@ -217,7 +217,6 @@ class Node:
         virtual_ip = header[3]
         neigh_dist_table = body[0]
         neigh_destination_map = body[1]
-
 
         d_coor, v_coor = self.give_coordinates(virtual_ip, virtual_ip)
         if not (self.distance_table[d_coor][v_coor][0] == 1):
@@ -328,12 +327,11 @@ class Node:
         dest_index = self.destination[dest]
         min_dist = self.distance_table[dest_index][0][0]
         virtual_index = 0
-        i = 0
-        for dist_instance in self.distance_table[dest_index]:
+
+        for i, dist_instance in enumerate(self.distance_table[dest_index]):
             if min_dist > dist_instance[0]:
                 min_dist = dist_instance[0]
                 virtual_index = i
-            i += 1
 
         if not min_dist == 0:
             local_interface = self.search_for_local_interface(self.give_passing_node_virtual_by_index(virtual_index))
@@ -344,16 +342,12 @@ class Node:
         return local_interface, self.distance_table[dest_index][virtual_index], virtual_index
 
     def show_interfaces(self):
-        i = 0
         print("id    rem            loc")
 
-        for neighbor in self.neighbours_info:
-            if neighbor.status == constant.DOWN:
-                i += 1
-                continue
-            space_size = 6 - self.num_digits(i)
-            print(str(i) + " " * space_size + neighbor.remote_virtual_IP + " " * 5 + neighbor.local_virtual_IP)
-            i += 1
+        for i, neighbor in enumerate(self.neighbours_info):
+            if not neighbor.status == constant.DOWN:
+                space_size = 6 - self.num_digits(i)
+                print(str(i) + " " * space_size + neighbor.remote_virtual_IP + " " * 5 + neighbor.local_virtual_IP)
 
     def show_routes(self):
         print("cost    dst             loc")
