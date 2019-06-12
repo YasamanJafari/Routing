@@ -6,7 +6,7 @@ from link import Link
 
 
 class Node:
-    def __init__(self, physical_host, physical_port, neighbours_info):
+    def __init__(self, physical_host, physical_port, neighbours_info, lock):
         self.physical_host = physical_host
         self.physical_port = physical_port
         self.neighbours_info = neighbours_info
@@ -20,6 +20,8 @@ class Node:
         self.link.create_neighbour_sockets(len(neighbours_info))
         self.trace_route_result = []
         self.trace_route_ttl = 1
+        self.lock = lock
+        
 
     def register_handlers(self, protocol_num, handler):
         if protocol_num in self.registered_handlers:
@@ -67,6 +69,7 @@ class Node:
         return dest_coor, via_coor
 
     def check_for_out_of_date(self):
+        self.lock.acquire()
         for i in range(len(self.last_updates)):
             for j in range(len(self.last_updates[i])):
                 if self.last_updates[i][j] == -1:
@@ -76,8 +79,10 @@ class Node:
                         (self.give_destination_node_virtual_by_index(i), self.give_passing_node_virtual_by_index(j))
                     self.distance_table[d_coor][v_coor] = [float('inf'), -1, ""]
         self.delete_inf_row_col_distance_table()
+        self.lock.release()
 
     def print_distance_table(self):
+        self.lock.acquire()
         print("____________________DISTANCE_TABLE_______________")
         print(" ", end="              ")
         for passing in self.passing_node:
@@ -90,7 +95,8 @@ class Node:
                 print(self.distance_table[i][j][0], end="              ")
             print(" ")
         print("_________________________________________________")
-        print("_________________________________________________\n\nß")
+        print("_________________________________________________\n\n")
+        self.lock.release()
 
     def initialize_table(self):
         self.destination = {}
@@ -125,9 +131,15 @@ class Node:
                 self.show_routes()
 
             elif items[0] == "down":
+                if len(items) != 2:
+                    print("Invalid form. Press help for more info.")
+                    continue
                 self.down_interface(int(items[1]))
 
             elif items[0] == "up":
+                if len(items) != 2:
+                    print("Invalid form. Press help for more info.")
+                    continue
                 self.up_interface(int(items[1]))
 
             elif items[0] == "send":
@@ -206,6 +218,16 @@ class Node:
         elif self.neighbours_info[interface_id].status == constant.UP:
             print("This interface is already up.")
         else:
+            interface_to_up = self.neighbours_info[interface_id]
+            virtual_IP = interface_to_up.remote_virtual_IP
+            for interface in self.neighbours_info:
+                if interface.status != constant.DOWN:
+                    dest_coor, via_coor = self.give_coordinates(virtual_IP, interface.local_virtual_IP)
+                    self.distance_table[dest_coor][via_coor] = [0, self.physical_port, self.physical_host]
+                    self.last_updates[dest_coor][via_coor] = -1
+                    dest_coor, via_coor = self.give_coordinates(interface.local_virtual_IP, virtual_IP)
+                    self.distance_table[dest_coor][via_coor] = [0, self.physical_port, self.physical_host]
+                    self.last_updates[dest_coor][via_coor] = -1
             self.neighbours_info[interface_id].status = constant.UP
 
     def down_interface(self, interface_id):
@@ -239,6 +261,7 @@ class Node:
         neigh_dist_table = body[0]
         neigh_destination_map = body[1]
 
+        self.lock.acquire()
         d_coor, v_coor = self.give_coordinates(virtual_ip, virtual_ip)
         if not (self.distance_table[d_coor][v_coor][0] == 1):
             self.distance_table[d_coor][v_coor] = [1, source_physical_port, source_physical_host]
@@ -267,8 +290,8 @@ class Node:
                     self.distance_table[index][neigh_index][0] = float('inf')
                     self.last_updates[index][neigh_index] = time.time()
 
-
         self.delete_inf_row_col_distance_table()
+        self.lock.release()
 
     def give_passing_node_virtual_by_index(self, index):
         for virtual, i in self.passing_node.items():
