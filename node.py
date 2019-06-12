@@ -122,10 +122,10 @@ class Node:
                 self.show_routes()
 
             elif items[0] == "down":
-                self.down_interface(items[1])
+                self.down_interface(int(items[1]))
 
             elif items[0] == "up":
-                self.up_interface(items[1])
+                self.up_interface(int(items[1]))
 
             elif items[0] == "send":
                 if len(items) < 4:
