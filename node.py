@@ -227,13 +227,14 @@ class Node:
 
         neigh_index = self.passing_node[virtual_ip]
         for index in range(len(self.distance_table)):
-            if not self.give_passing_node_virtual_by_index(index) in neigh_destination_map:
+            if not self.give_destination_node_virtual_by_index(index) in neigh_destination_map:
                 self.print_distance_table()
                 print(index, neigh_index)
                 print(self.distance_table[index][neigh_index])
 
                 self.distance_table[index][neigh_index][0] = float('inf')
-                self.delete_inf_row_col_distance_table()
+
+        self.delete_inf_row_col_distance_table()
             # distance_info = self.distance_table[index][neigh_index]
 
             # else:
