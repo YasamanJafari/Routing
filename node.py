@@ -319,11 +319,6 @@ class Node:
                 min_dist = dist_instance[0]
                 virtual_index = i
             i += 1
-        print("MIN: ***")
-        print(min_dist)
-        for node in self.passing_node:
-            print(node)
-        print("^^^")
         if not min_dist == 0:
             local_interface = self.search_for_local_interface(self.give_passing_node_virtual_by_index(virtual_index))
         else:
