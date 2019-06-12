@@ -73,6 +73,7 @@ class Node:
                     d_coor, v_coor = self.give_coordinates\
                         (self.give_destination_node_virtual_by_index(i), self.give_passing_node_virtual_by_index(j))
                     self.distance_table[d_coor][v_coor] = [float('inf'), -1, ""]
+        self.delete_inf_row_col_distance_table()
 
     def print_distance_table(self):
         print("____________________DISTANCE_TABLE_______________")
@@ -228,21 +229,11 @@ class Node:
         neigh_index = self.passing_node[virtual_ip]
         for index in range(len(self.distance_table)):
             if not self.give_destination_node_virtual_by_index(index) in neigh_destination_map:
-                self.print_distance_table()
-                print(index, neigh_index)
-                print(self.distance_table[index][neigh_index])
-
-                self.distance_table[index][neigh_index][0] = float('inf')
+                if not self.distance_table[index][neigh_index][0] == float('inf'):
+                    self.distance_table[index][neigh_index][0] = float('inf')
+                    self.last_updates[index][neigh_index] = time.time()
 
         self.delete_inf_row_col_distance_table()
-            # distance_info = self.distance_table[index][neigh_index]
-
-            # else:
-            #     neigh_dest_index = neigh_destination_map[self.give_passing_node_virtual_by_index(index)]
-            #     min_entry = neigh_dist_table[neigh_dest_index][0]
-            #     for d_info in neigh_dist_table[neigh_dest_index]:
-            #         if min_entry[0] > d_info[0]:
-            #             min_entry = d_info
 
     def give_passing_node_virtual_by_index(self, index):
         for virtual, i in self.passing_node.items():
