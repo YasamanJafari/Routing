@@ -9,7 +9,8 @@ import link
 
 def main(file_name):
     node_data = link.read_link_data(file_name)
-    this_node = Node(node_data.local_physical_IP, node_data.local_physical_port, node_data.interfaces)
+    lock = threading.Lock()
+    this_node = Node(node_data.local_physical_IP, node_data.local_physical_port, node_data.interfaces, lock)
     this_node.register_handlers(200, this_node.update_distance_table)
     this_node.register_handlers(0, this_node.print_message)
     t1 = threading.Thread(target=this_node.send_table)

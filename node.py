@@ -4,7 +4,7 @@ from link import Link
 
 
 class Node:
-    def __init__(self, physical_host, physical_port, neighbours_info):
+    def __init__(self, physical_host, physical_port, neighbours_info, lock):
         self.physical_host = physical_host
         self.physical_port = physical_port
         self.neighbours_info = neighbours_info
@@ -16,6 +16,7 @@ class Node:
         self.registered_handlers = {}
         self.link = Link(self.run_handler, self.physical_host, self.physical_port)
         self.link.create_neighbour_sockets(len(neighbours_info))
+        self.lock = lock
 
     def register_handlers(self, protocol_num, handler):
         if protocol_num in self.registered_handlers:
