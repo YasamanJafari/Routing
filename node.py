@@ -175,15 +175,12 @@ class Node:
     def send_table(self):
         while True:
             table_info = [self.distance_table, self.destination, self.passing_node]
-            i = 0
-            for neighbour in self.neighbours_info:
-                if neighbour.status == constant.DOWN:
-                    i += 1
-                    continue
-                header = self.get_header(neighbour.remote_physical_port, neighbour.local_virtual_IP, 200, neighbour.remote_virtual_IP)
-                self.link.send_message([header, table_info],
-                                     neighbour.remote_physical_port, neighbour.remote_physical_IP, i)
-                i += 1
+
+            for i, neighbour in enumerate(self.neighbours_info):
+                if not neighbour.status == constant.DOWN:
+                    header = self.get_header(neighbour.remote_physical_port, neighbour.local_virtual_IP, 200, neighbour.remote_virtual_IP)
+                    self.link.send_message([header, table_info],
+                                         neighbour.remote_physical_port, neighbour.remote_physical_IP, i)
             time.sleep(1)
 
     def print_message(self, message):
@@ -331,7 +328,7 @@ class Node:
             if min_dist > dist_instance[0]:
                 min_dist = dist_instance[0]
                 virtual_index = i
-  
+
         if not min_dist == 0:
             local_interface = self.search_for_local_interface(self.give_passing_node_virtual_by_index(virtual_index))
         else:
