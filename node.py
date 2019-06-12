@@ -326,13 +326,12 @@ class Node:
         dest_index = self.destination[dest]
         min_dist = self.distance_table[dest_index][0][0]
         virtual_index = 0
-        i = 0
-        for dist_instance in self.distance_table[dest_index]:
+
+        for i, dist_instance in enumerate(self.distance_table[dest_index]):
             if min_dist > dist_instance[0]:
                 min_dist = dist_instance[0]
                 virtual_index = i
-            i += 1
-
+  
         if not min_dist == 0:
             local_interface = self.search_for_local_interface(self.give_passing_node_virtual_by_index(virtual_index))
         else:
