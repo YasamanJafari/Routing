@@ -78,8 +78,8 @@ class Node:
     def print_distance_table(self):
         print("____________________DISTANCE_TABLE_______________")
         print(" ", end="              ")
-        for dest in self.destination:
-            print(dest, end="    ")
+        for passing in self.passing_node:
+            print(passing, end="    ")
         print(" ")
         print("_________________________________________________")
         for i in range(len(self.distance_table)):
