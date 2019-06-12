@@ -164,11 +164,8 @@ class Node:
         port = send_info[1]
         host = send_info[2]
 
-        print("_______________")
-        print(virtual_index)
         print(self.give_passing_node_virtual_by_index(virtual_index))
         i = self.find_neigh_index(self.give_passing_node_virtual_by_index(virtual_index))
-        print("#####", i)
 
         if min_dist == 0:
             self.print_message(message)
