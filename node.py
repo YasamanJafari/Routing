@@ -88,7 +88,6 @@ class Node:
         print("_________________________________________________")
         print("_________________________________________________\n\nß")
 
-
     def initialize_table(self):
         self.destination = {}
         self.passing_node = {}
@@ -306,7 +305,7 @@ class Node:
             for row in self.distance_table:
                 del row[passings[0]]
             del self.passing_node[self.give_passing_node_virtual_by_index(passings[0])]
-            self.update_passing_map_after()
+            self.update_passing_map_after(passings[0])
             del passings[0]
             for i in range(len(passings)):
                 passings[i] -= 1
@@ -349,7 +348,7 @@ class Node:
         return local_interface, self.distance_table[dest_index][virtual_index], virtual_index
 
     def show_interfaces(self):
-        print("id    rem            loc")
+        print("id    rem             loc")
 
         for i, neighbor in enumerate(self.neighbours_info):
             if not neighbor.status == constant.DOWN:
