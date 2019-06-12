@@ -203,6 +203,9 @@ class Node:
 
         i = self.find_neigh_index(self.give_passing_node_virtual_by_index(virtual_index))
 
+        if i is None:
+            return
+
         if src is None:
             src = local_interface
         header = self.get_header(port, local_interface, protocol_number, dest, src)
@@ -429,7 +432,6 @@ class Node:
         src = header[6]
 
         if packet_ttl == 1:
-            print("DEAD")
             self_virtual = self.search_for_connected_local_interface(local_virtual)
             is_mine, nei = self.check_if_interface_is_mine(dest)
             send_msg = [local_virtual, self_virtual]
@@ -466,7 +468,6 @@ class Node:
                 self.print_hops()
                 self.trace_route_result = []
                 self.trace_route_ttl = 1
-                self.trace_dest = None
                 self.trace_route_done = True
             else:
                 self.trace_route_ttl += 1
