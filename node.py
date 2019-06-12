@@ -33,7 +33,6 @@ class Node:
         if packet[0][4] in self.registered_handlers:
             exists, neighbour = self.check_if_interface_is_mine(packet[0][5])
             if exists and neighbour.status == constant.DOWN:
-                print("The given interface is currently down")
                 return
             elif exists and neighbour.status == constant.UP: 
                 self.registered_handlers.get(packet[0][4])(packet)
@@ -123,10 +122,10 @@ class Node:
                 self.show_routes()
 
             elif items[0] == "down":
-                self.down_interface(items[1])
+                self.down_interface(int(items[1]))
 
             elif items[0] == "up":
-                self.up_interface(items[1])
+                self.up_interface(int(items[1]))
 
             elif items[0] == "send":
                 if len(items) < 4:
@@ -215,7 +214,7 @@ class Node:
             self.delete_dests([self.destination[rem_virtual_IP], self.destination[loc_virtual_IP]])
             self.delete_passings([self.passing_node[rem_virtual_IP], self.passing_node[loc_virtual_IP]])
 
-            self.neighbours_info[interface_id].status = constant.UP
+            self.neighbours_info[interface_id].status = constant.DOWN
 
     def update_distance_table(self, message):
         header = message[0]
@@ -307,7 +306,7 @@ class Node:
             for row in self.distance_table:
                 del row[passings[0]]
             del self.passing_node[self.give_passing_node_virtual_by_index(passings[0])]
-            self.update_passing_map_after()
+            self.update_passing_map_after(passings[0])
             del passings[0]
             for i in range(len(passings)):
                 passings[i] -= 1
@@ -329,7 +328,6 @@ class Node:
         for neighbour in self.neighbours_info:
             if neighbour.remote_virtual_IP == virtual:
                 return neighbour.local_virtual_IP
-            return virtual
 
     def find_hop(self, dest):
         dest_index = self.destination[dest]
@@ -340,8 +338,7 @@ class Node:
             if min_dist > dist_instance[0]:
                 min_dist = dist_instance[0]
                 virtual_index = i
-
-        if not min_dist == 0:
+        if not (min_dist == 0):
             local_interface = self.search_for_local_interface(self.give_passing_node_virtual_by_index(virtual_index))
         else:
             local_interface = dest
