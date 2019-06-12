@@ -159,6 +159,7 @@ class Node:
 
                 print("Goodbye!")
                 return
+
             elif items[0] == "traceroute":
                 self.trace_route(items[1])
 
@@ -401,9 +402,9 @@ class Node:
                 print(str(min_dist) + " " * space_size + dest + " " * 5 + local_interface)
 
     def trace_route(self, virtual_ip):
+        self.trace_route_done = False
         self.send_message(virtual_ip, constant.TRACEROUTE_QUERY_PROTOCOL_NUM, "1", None)
         self.trace_route_result = []
-        self.trace_route_done = False
 
         while not self.trace_route_done:
             continue
