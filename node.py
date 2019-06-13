@@ -68,17 +68,19 @@ class Node:
         return dest_coor, via_coor
 
     def check_for_out_of_date(self):
-        self.lock.acquire()
-        for i in range(len(self.last_updates)):
-            for j in range(len(self.last_updates[i])):
-                if self.last_updates[i][j] == -1:
-                    continue
-                if time.time() - self.last_updates[i][j] > 5:
-                    d_coor, v_coor = self.give_coordinates\
-                        (self.give_destination_node_virtual_by_index(i), self.give_passing_node_virtual_by_index(j))
-                    self.distance_table[d_coor][v_coor] = [float('inf'), -1, ""]
-        self.delete_inf_row_col_distance_table()
-        self.lock.release()
+        while True:
+            self.lock.acquire()
+            for i in range(len(self.last_updates)):
+                for j in range(len(self.last_updates[i])):
+                    if self.last_updates[i][j] == -1:
+                        continue
+                    if time.time() - self.last_updates[i][j] > 5:
+                        d_coor, v_coor = self.give_coordinates\
+                            (self.give_destination_node_virtual_by_index(i), self.give_passing_node_virtual_by_index(j))
+                        self.distance_table[d_coor][v_coor] = [float('inf'), -1, ""]
+            self.delete_inf_row_col_distance_table()
+            self.lock.release()
+        time.sleep(4)
 
     def print_distance_table(self):
         self.lock.acquire()
