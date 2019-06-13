@@ -212,6 +212,7 @@ class Node:
 
     def send_table(self):
         while True:
+            self.lock.acquire()
             table_info = [self.distance_table, self.destination, self.passing_node]
 
             for i, neighbour in enumerate(self.neighbours_info):
@@ -219,6 +220,7 @@ class Node:
                     header = self.get_header(neighbour.remote_physical_port, neighbour.local_virtual_IP, 200, neighbour.remote_virtual_IP, neighbour.local_virtual_IP)
                     self.link.send_message([header, table_info],
                                          neighbour.remote_physical_port, neighbour.remote_physical_IP, i)
+            self.lock.release()
             time.sleep(1)
 
     def print_message(self, message):
