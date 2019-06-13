@@ -80,7 +80,7 @@ class Node:
                         self.distance_table[d_coor][v_coor] = [float('inf'), -1, ""]
             self.delete_inf_row_col_distance_table()
             self.lock.release()
-        time.sleep(4)
+        time.sleep(3)
 
     def print_distance_table(self):
         self.lock.acquire()
@@ -320,18 +320,16 @@ class Node:
                 return virtual
 
     def row_is_infinity(self, i):
-        infinity = True
         for dist_item in self.distance_table[i]:
             if not dist_item[0] == float('inf'):
-                infinity = False
-        return infinity
+                return False
+        return True
 
     def col_is_infinity(self, i):
-        infinity = True
         for dist_item in self.distance_table[:][i]:
             if not dist_item[0] == float('inf'):
-                infinity = False
-        return infinity
+                return False
+        return True
 
     def update_dest_map_after(self, i):
         for virtual, index in self.destination.items():
