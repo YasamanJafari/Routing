@@ -39,11 +39,10 @@ class Node:
             exists, neighbour = self.check_if_interface_is_mine(packet[0][5])
             if exists and neighbour.status == constant.DOWN:
                 return
-            elif (exists and neighbour.status == constant.UP) or \
-                    ((not exists) and packet[0][4] == constant.TRACEROUTE_QUERY_PROTOCOL_NUM):
-                self.registered_handlers.get(packet[0][4])(packet)
-            if not exists:
+            if not exists and packet[0][4] != constant.TRACEROUTE_QUERY_PROTOCOL_NUM:
                 self.send_message(packet[0][5], packet[0][4], packet[1], packet[0][6])
+                return
+            self.registered_handlers.get(packet[0][4])(packet)
         else:
             print("This protocol number is not registered.")
 
@@ -417,7 +416,14 @@ class Node:
     def trace_route(self, virtual_ip):
         self.trace_route_done = False
         self.trace_dest = virtual_ip
-        self.send_message(virtual_ip, constant.TRACEROUTE_QUERY_PROTOCOL_NUM, 1, None)
+        is_mine, neigh = self.check_if_interface_is_mine(virtual_ip)
+        if is_mine:
+            self.trace_route_done = True
+            print("Traceroute from", virtual_ip, "to", virtual_ip)
+            print(1, virtual_ip)
+            print("Traceroute finished in", 1, "hops")
+        else:
+            self.send_message(virtual_ip, constant.TRACEROUTE_QUERY_PROTOCOL_NUM, 1, None)
         self.trace_route_result = []
 
         while not self.trace_route_done:
