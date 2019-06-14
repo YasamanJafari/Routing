@@ -278,6 +278,7 @@ class Node:
                     self.last_updates[dest_coor][via_coor] = -1
 
                     self.lock.release()
+            print("interface", interface_id ,"is now enabled")
 
     def down_interface(self, interface_id):
         if interface_id < 0 or interface_id >= len(self.neighbours_info):
@@ -302,6 +303,7 @@ class Node:
             self.lock.release()
 
             self.neighbours_info[interface_id].status = constant.DOWN
+            print("interface", interface_id, "is now disabled")
 
     def update_distance_table(self, message):
         header = message[0]
