@@ -3,3 +3,4 @@ node B localhost
 node C localhost
 A <-> B
 B <-> C
+A <-> C

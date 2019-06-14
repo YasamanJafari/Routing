@@ -272,6 +272,7 @@ class Node:
                     self.last_updates[dest_coor][via_coor] = -1
 
                     self.lock.release()
+            print("interface", interface_id ,"is now enabled")
 
     def down_interface(self, interface_id):
         if interface_id < 0 or interface_id >= len(self.neighbours_info):
