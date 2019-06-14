@@ -82,8 +82,7 @@ class Node:
                         self.distance_table[d_coor][v_coor] = [float('inf'), -1, ""]
             self.lock.release()
             self.delete_inf_row_col_distance_table()
-
-        time.sleep(5)
+        time.sleep(3)
 
     def print_distance_table(self):
         self.lock.acquire()
