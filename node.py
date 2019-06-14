@@ -73,9 +73,11 @@ class Node:
                 for j in range(len(self.last_updates[i])):
                     if i >= len(self.last_updates):
                         self.print_distance_table()
+                        self.print_last_update()
                         print("LA ERROR I", i, "ALLOWED", len(self.last_updates))
                     if j >= len(self.last_updates[i]):
                         self.print_distance_table()
+                        self.print_last_update()
                         print("LA Error J", j, "ALLOWED", len(self.last_updates[i]))
 
                     if self.last_updates[i][j] == -1:
@@ -83,9 +85,11 @@ class Node:
 
                     if i >= len(self.last_updates):
                         self.print_distance_table()
+                        self.print_last_update()
                         print("LA ERROR I", i, "ALLOWED", len(self.last_updates))
                     if j >= len(self.last_updates[i]):
                         self.print_distance_table()
+                        self.print_last_update()
                         print("LA Error J", j, "ALLOWED", len(self.last_updates[i]))
 
                     if time.time() - self.last_updates[i][j] > 5:
@@ -95,9 +99,11 @@ class Node:
 
                         if d_coor >= len(self.distance_table):
                             self.print_distance_table()
+                            self.print_last_update()
                             print("DT ERROR I", d_coor, "ALLOWED", len(self.distance_table))
                         if v_coor >= len(self.distance_table[d_coor]):
                             self.print_distance_table()
+                            self.print_last_update()
                             print("DT Error J", v_coor, "ALLOWED", len(self.distance_table[d_coor]))
                         self.distance_table[d_coor][v_coor] = [float('inf'), -1, ""]
                         self.lock.release()
@@ -124,7 +130,7 @@ class Node:
 
     def print_last_update(self):
         self.lock.acquire()
-        print("____________________DISTANCE_TABLE_______________")
+        print("____________________LAST_UPDATES_______________")
         print(" ", end="              ")
         for passing in self.passing_node:
             print(passing, end="    ")
@@ -375,6 +381,7 @@ class Node:
     def col_is_infinity(self, i):
         if i >= len(self.distance_table[0]):
             self.print_distance_table()
+            self.print_last_update()
             print("EROR", i, "ALLOWED",len(self.distance_table))
         for dist_item in self.distance_table[:][i]:
             if not dist_item[0] == float('inf'):
