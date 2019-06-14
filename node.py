@@ -12,7 +12,6 @@ class Node:
         self.passing_node = {}
         self.distance_table = []
         self.last_updates = []
-        self.initialize_table()
         self.registered_handlers = {}
         self.link = Link(self.run_handler, self.physical_host, self.physical_port)
         self.link.create_neighbour_sockets(len(neighbours_info))
@@ -21,6 +20,7 @@ class Node:
         self.lock = lock
         self.trace_route_done = True
         self.trace_dest = None
+        self.initialize_table()
 
     def register_handlers(self, protocol_num, handler):
         if protocol_num in self.registered_handlers:
