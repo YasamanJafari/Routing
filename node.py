@@ -77,17 +77,17 @@ class Node:
                         print("LA ERROR I", i, "ALLOWED", len(self.last_updates))
                     if j >= len(self.last_updates[i]):
                         self.print_distance_table()
-                        self.print_last_update()
                         print("LA Error J", j, "ALLOWED", len(self.last_updates[i]))
+                        self.print_last_update()
 
                     if self.last_updates[i][j] == -1:
                         continue
 
-                    if i >= len(self.last_updates):
+                    if i >= len(self.last_updates) or i < 0:
                         self.print_distance_table()
                         self.print_last_update()
                         print("LA ERROR I", i, "ALLOWED", len(self.last_updates))
-                    if j >= len(self.last_updates[i]):
+                    if j >= len(self.last_updates[i])or j < 0:
                         self.print_distance_table()
                         self.print_last_update()
                         print("LA Error J", j, "ALLOWED", len(self.last_updates[i]))
@@ -136,9 +136,10 @@ class Node:
             print(passing, end="    ")
         print(" ")
         print("_________________________________________________")
-        for i in range(len(self.distance_table)):
-            print(self.give_destination_node_virtual_by_index(i), end="  | ")
-            for j in range(len(self.distance_table[i])):
+        for i in range(len(self.last_updates)):
+            # print(self.give_destination_node_virtual_by_index(i), end="  | ")
+            print("                  ", end="  | ")
+            for j in range(len(self.last_updates[i])):
                 print(self.last_updates[i][j], end="              ")
             print(" ")
         print("_________________________________________________")
@@ -373,16 +374,21 @@ class Node:
                 return virtual
 
     def row_is_infinity(self, i):
+        if i >= len(self.distance_table):
+            self.print_distance_table()
+            self.print_last_update()
+            print("EROR", i, "ALLOWED",len(self.distance_table))
         for dist_item in self.distance_table[i]:
             if not dist_item[0] == float('inf'):
                 return False
         return True
 
     def col_is_infinity(self, i):
+
         if i >= len(self.distance_table[0]):
             self.print_distance_table()
             self.print_last_update()
-            print("EROR", i, "ALLOWED",len(self.distance_table))
+            print("EROR", i, "ALLOWED",len(self.distance_table[0]))
         for dist_item in self.distance_table[:][i]:
             if not dist_item[0] == float('inf'):
                 return False
