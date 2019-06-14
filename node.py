@@ -323,12 +323,14 @@ class Node:
             dest_index = neigh_destination_map[destination]
             min_distance = float('inf')
             for distance_info in neigh_dist_table[dest_index]:
-                if min_distance > distance_info[0] and not(distance_info[1] == self.physical_port and distance_info[2] == self.physical_host):
+                if distance_info[1] == self.physical_port and distance_info[2] == self.physical_host:
+                    continue
+                if min_distance > distance_info[0]:
                     min_distance = distance_info[0]
             d_coor, v_coor = self.give_coordinates(destination, virtual_ip)
             self.last_updates[d_coor][v_coor] = time.time()
             min_distance += 1
-            if self.distance_table[d_coor][v_coor][0] >= min_distance:
+            if self.distance_table[d_coor][v_coor][0] > min_distance:
                 if min_distance > 64:
                     min_distance = float('inf')
                 updated_data = [min_distance, source_physical_port, source_physical_host]
