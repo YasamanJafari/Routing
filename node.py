@@ -81,7 +81,7 @@ class Node:
                             (self.give_destination_node_virtual_by_index(i), self.give_passing_node_virtual_by_index(j))
                         self.distance_table[d_coor][v_coor] = [float('inf'), -1, ""]
             self.lock.release()
-            self.delete_inf_row_col_distance_table()
+            # self.delete_inf_row_col_distance_table()
 
         time.sleep(5)
 
@@ -243,6 +243,7 @@ class Node:
 
     def send_table(self):
         while True:
+            self.delete_inf_row_col_distance_table()
             self.lock.acquire()
             table_info = [self.distance_table, self.destination, self.passing_node]
 
@@ -342,7 +343,6 @@ class Node:
                     self.distance_table[index][neigh_index][0] = float('inf')
                     self.last_updates[index][neigh_index] = time.time()
         self.lock.release()
-        self.delete_inf_row_col_distance_table()
 
 
     def give_passing_node_virtual_by_index(self, index):
@@ -366,13 +366,12 @@ class Node:
         return True
 
     def col_is_infinity(self, i):
-
         if i >= len(self.distance_table[0]):
             self.print_distance_table()
             self.print_last_update()
             print("EROR", i, "ALLOWED",len(self.distance_table[0]))
-        for dist_item in self.distance_table[:][i]:
-            if not dist_item[0] == float('inf'):
+        for r in range(len(self.distance_table)):
+            if not self.distance_table[r][i][0] == float('inf'):
                 return False
         return True
 
@@ -422,6 +421,7 @@ class Node:
             for j in range(len(self.distance_table[0])):
                 if self.col_is_infinity(j):
                     inf_col.append(j)
+
         self.delete_dests(inf_row)
         self.delete_passings(inf_col)
         self.lock.release()
