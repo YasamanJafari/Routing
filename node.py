@@ -81,7 +81,7 @@ class Node:
                             (self.give_destination_node_virtual_by_index(i), self.give_passing_node_virtual_by_index(j))
                         self.distance_table[d_coor][v_coor] = [float('inf'), -1, ""]
             self.lock.release()
-            # self.delete_inf_row_col_distance_table()
+            self.delete_inf_row_col_distance_table()
 
         time.sleep(5)
 
@@ -357,6 +357,7 @@ class Node:
                     self.distance_table[index][neigh_index][0] = float('inf')
                     self.last_updates[index][neigh_index] = time.time()
         self.lock.release()
+        self.delete_inf_row_col_distance_table()
 
     def give_passing_node_virtual_by_index(self, index):
         for virtual, i in self.passing_node.items():
