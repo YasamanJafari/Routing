@@ -183,6 +183,12 @@ class Node:
                             msg += " "
                     self.send_message(items[1], int(items[2]), msg, None)
 
+            elif items[0] == "print_table":
+                if len(items) != 1:
+                    print("Invalid form. Press help for more info.")
+                else:
+                    self.print_distance_table()
+
             elif items[0] == "q":
                 if len(items) != 1:
                     print("Invalid form. Press help for more info.")
