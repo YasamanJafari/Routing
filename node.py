@@ -314,6 +314,7 @@ class Node:
         virtual_ip = header[3]
         neigh_dist_table = body[0]
         neigh_destination_map = body[1]
+        neigh_passing_map = body[2]
 
         self.lock.acquire()
         d_coor, v_coor = self.give_coordinates(virtual_ip, virtual_ip)
@@ -340,7 +341,8 @@ class Node:
 
         neigh_index = self.passing_node[virtual_ip]
         for index in range(len(self.distance_table)):
-            if not self.give_destination_node_virtual_by_index(index) in neigh_destination_map:
+            if not self.give_destination_node_virtual_by_index(index) in neigh_destination_map \
+                    or neigh_dist_table[neigh_destination_map[self.give_destination_node_virtual_by_index(index)]][neigh_passing_map[virtual_ip]][0] == float('inf'):
                 if not self.distance_table[index][neigh_index][0] == float('inf'):
                     self.distance_table[index][neigh_index][0] = float('inf')
                     self.last_updates[index][neigh_index] = time.time()
