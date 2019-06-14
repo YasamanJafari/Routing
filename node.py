@@ -332,22 +332,31 @@ class Node:
             d_coor, v_coor = self.give_coordinates(destination, virtual_ip)
             self.last_updates[d_coor][v_coor] = time.time()
             min_distance += 1
-            if self.distance_table[d_coor][v_coor][0] > min_distance:
-                if min_distance > 64:
-                    min_distance = float('inf')
-                updated_data = [min_distance, source_physical_port, source_physical_host]
-                self.distance_table[d_coor][v_coor] = updated_data
-                self.last_updates[d_coor][v_coor] = time.time()
+
+            if min_distance > 64:
+                min_distance = float('inf')
+            updated_data = [min_distance, source_physical_port, source_physical_host]
+            self.distance_table[d_coor][v_coor] = updated_data
+            self.last_updates[d_coor][v_coor] = time.time()
 
         neigh_index = self.passing_node[virtual_ip]
         for index in range(len(self.distance_table)):
-            if not self.give_destination_node_virtual_by_index(index) in neigh_destination_map \
-                    or neigh_dist_table[neigh_destination_map[self.give_destination_node_virtual_by_index(index)]][neigh_passing_map[virtual_ip]][0] == float('inf'):
+            virtual_dest = self.give_destination_node_virtual_by_index(index)
+            if virtual_dest not in neigh_destination_map:
+                if not self.distance_table[index][neigh_index][0] == float('inf'):
+                    self.distance_table[index][neigh_index][0] = float('inf')
+                    self.last_updates[index][neigh_index] = time.time()
+            elif virtual_dest in neigh_passing_map:
+                if neigh_dist_table[neigh_destination_map[virtual_dest]][neigh_passing_map[virtual_ip]][0] == float('inf')\
+                        and neigh_dist_table[neigh_destination_map[virtual_dest]][neigh_passing_map[virtual_dest]][0] == float('inf'):
+                    if not self.distance_table[index][neigh_index][0] == float('inf'):
+                        self.distance_table[index][neigh_index][0] = float('inf')
+                        self.last_updates[index][neigh_index] = time.time()
+            elif neigh_dist_table[neigh_destination_map[virtual_dest]][neigh_passing_map[virtual_ip]][0] == float('inf'):
                 if not self.distance_table[index][neigh_index][0] == float('inf'):
                     self.distance_table[index][neigh_index][0] = float('inf')
                     self.last_updates[index][neigh_index] = time.time()
         self.lock.release()
-
 
     def give_passing_node_virtual_by_index(self, index):
         for virtual, i in self.passing_node.items():
