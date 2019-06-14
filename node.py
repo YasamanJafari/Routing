@@ -122,6 +122,23 @@ class Node:
         print("_________________________________________________\n\n")
         self.lock.release()
 
+    def print_last_update(self):
+        self.lock.acquire()
+        print("____________________DISTANCE_TABLE_______________")
+        print(" ", end="              ")
+        for passing in self.passing_node:
+            print(passing, end="    ")
+        print(" ")
+        print("_________________________________________________")
+        for i in range(len(self.distance_table)):
+            print(self.give_destination_node_virtual_by_index(i), end="  | ")
+            for j in range(len(self.distance_table[i])):
+                print(self.last_updates[i][j], end="              ")
+            print(" ")
+        print("_________________________________________________")
+        print("_________________________________________________\n\n")
+        self.lock.release()
+
     def initialize_table(self):
         self.destination = {}
         self.passing_node = {}
