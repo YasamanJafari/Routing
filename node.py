@@ -69,18 +69,41 @@ class Node:
 
     def check_for_out_of_date(self):
         while True:
-            self.lock.acquire()
             for i in range(len(self.last_updates)):
                 for j in range(len(self.last_updates[i])):
+                    if i >= len(self.last_updates):
+                        self.print_distance_table()
+                        print("LA ERROR I", i, "ALLOWED", len(self.last_updates))
+                    if j >= len(self.last_updates[i]):
+                        self.print_distance_table()
+                        print("LA Error J", j, "ALLOWED", len(self.last_updates[i]))
+
                     if self.last_updates[i][j] == -1:
                         continue
+
+                    if i >= len(self.last_updates):
+                        self.print_distance_table()
+                        print("LA ERROR I", i, "ALLOWED", len(self.last_updates))
+                    if j >= len(self.last_updates[i]):
+                        self.print_distance_table()
+                        print("LA Error J", j, "ALLOWED", len(self.last_updates[i]))
+
                     if time.time() - self.last_updates[i][j] > 5:
+                        self.lock.acquire()
                         d_coor, v_coor = self.give_coordinates\
                             (self.give_destination_node_virtual_by_index(i), self.give_passing_node_virtual_by_index(j))
+
+                        if d_coor >= len(self.distance_table):
+                            self.print_distance_table()
+                            print("DT ERROR I", d_coor, "ALLOWED", len(self.distance_table))
+                        if v_coor >= len(self.distance_table[d_coor]):
+                            self.print_distance_table()
+                            print("DT Error J", v_coor, "ALLOWED", len(self.distance_table[d_coor]))
                         self.distance_table[d_coor][v_coor] = [float('inf'), -1, ""]
+                        self.lock.release()
             self.delete_inf_row_col_distance_table()
-            self.lock.release()
-        time.sleep(3)
+
+        time.sleep(5)
 
     def print_distance_table(self):
         self.lock.acquire()
@@ -103,11 +126,13 @@ class Node:
         self.destination = {}
         self.passing_node = {}
 
+        self.lock.acquire()
         for neighbour in self.neighbours_info:
             for other in self.neighbours_info:
                 dest_coor, via_coor = self.give_coordinates(neighbour.local_virtual_IP, other.local_virtual_IP)
                 self.distance_table[dest_coor][via_coor] = [0, self.physical_port, self.physical_host]
                 self.last_updates[dest_coor][via_coor] = -1
+        self.lock.release()
 
     def num_digits(self, number):
         count = 0
@@ -267,8 +292,10 @@ class Node:
             if rem_virtual_IP in self.passing_node:
                 should_del_passings.append(self.passing_node[rem_virtual_IP])
 
+            self.lock.acquire()
             self.delete_dests(should_del_dests)
             self.delete_passings(should_del_passings)
+            self.lock.release()
 
             self.neighbours_info[interface_id].status = constant.DOWN
 
@@ -285,7 +312,6 @@ class Node:
         d_coor, v_coor = self.give_coordinates(virtual_ip, virtual_ip)
         if not (self.distance_table[d_coor][v_coor][0] == 1):
             self.distance_table[d_coor][v_coor] = [1, source_physical_port, source_physical_host]
-
             self.last_updates[d_coor][v_coor] = time.time()
         for destination in neigh_destination_map:
             dest_index = neigh_destination_map[destination]
@@ -309,9 +335,9 @@ class Node:
                 if not self.distance_table[index][neigh_index][0] == float('inf'):
                     self.distance_table[index][neigh_index][0] = float('inf')
                     self.last_updates[index][neigh_index] = time.time()
-
-        self.delete_inf_row_col_distance_table()
         self.lock.release()
+        self.delete_inf_row_col_distance_table()
+
 
     def give_passing_node_virtual_by_index(self, index):
         for virtual, i in self.passing_node.items():
@@ -330,6 +356,9 @@ class Node:
         return True
 
     def col_is_infinity(self, i):
+        if i >= len(self.distance_table[0]):
+            self.print_distance_table()
+            print("EROR", i, "ALLOWED",len(self.distance_table))
         for dist_item in self.distance_table[:][i]:
             if not dist_item[0] == float('inf'):
                 return False
@@ -349,6 +378,7 @@ class Node:
         dests.sort()
         while len(dests) > 0:
             del self.distance_table[dests[0]]
+            del self.last_updates[dests[0]]
             del self.destination[self.give_destination_node_virtual_by_index(dests[0])]
             self.update_dest_map_after(dests[0])
             del dests[0]
@@ -359,6 +389,8 @@ class Node:
         passings.sort()
         while len(passings) > 0:
             for row in self.distance_table:
+                del row[passings[0]]
+            for row in self.last_updates:
                 del row[passings[0]]
             del self.passing_node[self.give_passing_node_virtual_by_index(passings[0])]
             self.update_passing_map_after(passings[0])
@@ -376,8 +408,10 @@ class Node:
         for j in range(len(self.distance_table[0])):
             if self.col_is_infinity(j):
                 inf_col.append(j)
+        self.lock.acquire()
         self.delete_dests(inf_row)
         self.delete_passings(inf_col)
+        self.lock.release()
 
     def search_for_connected_local_interface(self, virtual):
         for neighbour in self.neighbours_info:
