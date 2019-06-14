@@ -446,6 +446,7 @@ class Node:
                 return neighbour.local_virtual_IP
 
     def find_hop(self, dest):
+        self.lock.acquire()
         dest_index = self.destination[dest]
         min_dist = self.distance_table[dest_index][0][0]
         virtual_index = 0
@@ -458,6 +459,7 @@ class Node:
             local_interface = self.search_for_connected_local_interface(self.give_passing_node_virtual_by_index(virtual_index))
         else:
             local_interface = dest
+        self.lock.release()
         # return local_interface, min_dist
 
         return local_interface, self.distance_table[dest_index][virtual_index], virtual_index
@@ -471,7 +473,6 @@ class Node:
                 print(str(i) + " " * space_size + neighbor.remote_virtual_IP + " " * 5 + neighbor.local_virtual_IP)
 
     def show_routes(self):
-        self.lock.acquire()
         print("cost    dst             loc")
 
         for dest in self.destination:
@@ -480,7 +481,6 @@ class Node:
             if not min_dist == float('inf'):
                 space_size = 8 - self.num_digits(min_dist)
                 print(str(min_dist) + " " * space_size + dest + " " * 5 + local_interface)
-        self.lock.release()
 
     def trace_route(self, virtual_ip):
         self.trace_route_done = False
