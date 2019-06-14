@@ -69,44 +69,18 @@ class Node:
 
     def check_for_out_of_date(self):
         while True:
+            self.lock.acquire()
             for i in range(len(self.last_updates)):
                 for j in range(len(self.last_updates[i])):
-                    if i >= len(self.last_updates):
-                        self.print_distance_table()
-                        self.print_last_update()
-                        print("LA ERROR I", i, "ALLOWED", len(self.last_updates))
-                    if j >= len(self.last_updates[i]):
-                        self.print_distance_table()
-                        print("LA Error J", j, "ALLOWED", len(self.last_updates[i]))
-                        self.print_last_update()
 
                     if self.last_updates[i][j] == -1:
                         continue
 
-                    if i >= len(self.last_updates) or i < 0:
-                        self.print_distance_table()
-                        self.print_last_update()
-                        print("LA ERROR I", i, "ALLOWED", len(self.last_updates))
-                    if j >= len(self.last_updates[i])or j < 0:
-                        self.print_distance_table()
-                        self.print_last_update()
-                        print("LA Error J", j, "ALLOWED", len(self.last_updates[i]))
-
                     if time.time() - self.last_updates[i][j] > 5:
-                        self.lock.acquire()
                         d_coor, v_coor = self.give_coordinates\
                             (self.give_destination_node_virtual_by_index(i), self.give_passing_node_virtual_by_index(j))
-
-                        if d_coor >= len(self.distance_table):
-                            self.print_distance_table()
-                            self.print_last_update()
-                            print("DT ERROR I", d_coor, "ALLOWED", len(self.distance_table))
-                        if v_coor >= len(self.distance_table[d_coor]):
-                            self.print_distance_table()
-                            self.print_last_update()
-                            print("DT Error J", v_coor, "ALLOWED", len(self.distance_table[d_coor]))
                         self.distance_table[d_coor][v_coor] = [float('inf'), -1, ""]
-                        self.lock.release()
+            self.lock.release()
             self.delete_inf_row_col_distance_table()
 
         time.sleep(5)
@@ -432,13 +406,14 @@ class Node:
         inf_row = []
         inf_col = []
 
+        self.lock.acquire()
         for i in range(len(self.distance_table)):
             if self.row_is_infinity(i):
                 inf_row.append(i)
-        for j in range(len(self.distance_table[0])):
-            if self.col_is_infinity(j):
-                inf_col.append(j)
-        self.lock.acquire()
+        if len(self.distance_table) > 0:
+            for j in range(len(self.distance_table[0])):
+                if self.col_is_infinity(j):
+                    inf_col.append(j)
         self.delete_dests(inf_row)
         self.delete_passings(inf_col)
         self.lock.release()
