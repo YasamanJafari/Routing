@@ -296,6 +296,7 @@ class Node:
             self.lock.release()
 
             self.neighbours_info[interface_id].status = constant.DOWN
+            print("interface", interface_id, "is now disabled")
 
     def update_distance_table(self, message):
         header = message[0]
